@@ -1,15 +1,15 @@
-from summarizer import BedrockSummarizer
-from structredExtraction import BedrockstructredExtraction
-from data_masking import BedrockDataMasking
-from nl2sql import BedrockNL2SQL
-from rag_semantic_search import RAGSemanticSearch
-from pdfSummarizer import BedrockPdfSummarizer
-from grammarCorrection import BedrockGrammarCorrection
-from productDescriptionGeneration import productDescriptionGeneration
-from imageGeneration import BedrockImageGeneration
-from medical_scribing import MedicalScribe
-from query_csv import QueryCSV
-from icd_code_generator import ICDCodeGenerator
+from .summarizer import BedrockSummarizer
+from .structredExtraction import BedrockstructredExtraction
+from .data_masking import BedrockDataMasking
+from .nl2sql import BedrockNL2SQL
+from .rag_semantic_search import RAGSemanticSearch
+from .pdfSummarizer import BedrockPdfSummarizer
+from .grammarCorrection import BedrockGrammarCorrection
+from .productDescriptionGeneration import productDescriptionGeneration
+from .imageGeneration import BedrockImageGeneration
+from .medical_scribing import MedicalScribe
+from .query_csv import QueryCSV
+from .icd_code_generator import ICDCodeGenerator
 
 import os
 from loguru import logger

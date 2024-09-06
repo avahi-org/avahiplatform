@@ -129,12 +129,31 @@ image, seed, cost = avahiplatform.imageGeneration("A beautiful sunset over mount
 
 ```python
 summary, transcript = avahiplatform.medicalscribing("path/to/audio.mp3", "input-bucket", "iam-arn")
+
+# Note in medical scribe in iam_arn: It should have iam pass role inline policy which should look like this:
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Action": [
+				"iam:GetRole",
+				"iam:PassRole"
+			],
+			"Resource": [
+				"arn:aws:iam::<account-id>:role/<role-name>"
+			]
+		}
+	]
+}
+
+Along with this, the role/user should have full access to both Transcribe and Comprehend.
 ```
 
 ### ICD-10 Code Generation
 
 ```python
-icd_code = avahiplatform.icdcoding("Patient presents with severe chest pain")
+icd_code = avahiplatform.icdcoding("local_file.txt")
 ```
 
 ### CSV Querying

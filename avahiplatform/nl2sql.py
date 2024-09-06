@@ -5,7 +5,7 @@ import botocore.exceptions
 import langchain
 from langchain_community.agent_toolkits import create_sql_agent
 from langchain_community.utilities.sql_database import SQLDatabase
-from langchain_community.chat_models import BedrockChat
+from langchain_aws import ChatBedrock
 from langchain.agents.agent_types import AgentType
 from langchain.prompts.chat import ChatPromptTemplate
 
@@ -45,7 +45,7 @@ class BedrockNL2SQL:
             model_name = self.default_model_name
 
         model_id, _, _ = self._get_model_details(model_name)
-        llm = BedrockChat(model_id=model_id, client=self.bedrock, model_kwargs={"temperature": 0})
+        llm = ChatBedrock(model_id=model_id, client=self.bedrock, model_kwargs={"temperature": 0})
         db = SQLDatabase.from_uri(db_uri)
 
         agent_executor = create_sql_agent(llm, db=db, agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
