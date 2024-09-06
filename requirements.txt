@@ -5,3 +5,8 @@ loguru==0.7.2
 setuptools==72.1.0
 chromadb==0.5.3
 langchain-chroma==0.1.0
+unstructured>=0.12.3
+python-magic-bin>=0.4.14
+unstructured[pdf]
+pillow>=10.4.0
+pandas
