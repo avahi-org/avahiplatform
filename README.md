@@ -1,3 +1,6 @@
+![GitHub stars](https://img.shields.io/github/stars/avahi-org/avahiplatform)
+
+
 # avahiplatform
 
 avahiplatform is a library that makes your Gen-AI tasks effortless. It provides an easy-to-use interface for working with Large Language Models (LLMs) on AWS Bedrock, allowing you to turn enterprise use cases into production applications with just a few lines of Python code.
