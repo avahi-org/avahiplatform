@@ -1,31 +1,18 @@
-# from .summarizer import BedrockSummarizer
-# from .structredExtraction import BedrockstructredExtraction
-# from .data_masking import BedrockDataMasking
-# from .nl2sql import BedrockNL2SQL
-# from .rag_semantic_search import RAGSemanticSearch
-
-# from .pdfSummarizer import BedrockPdfSummarizer
-# from .grammarCorrection import BedrockGrammarCorrection
-# from .productDescriptionGeneration import productDescriptionGeneration
-
-# from .imageGeneration import BedrockImageGeneration
-
 from summarizer import BedrockSummarizer
 from structredExtraction import BedrockstructredExtraction
 from data_masking import BedrockDataMasking
 from nl2sql import BedrockNL2SQL
 from rag_semantic_search import RAGSemanticSearch
-
 from pdfSummarizer import BedrockPdfSummarizer
 from grammarCorrection import BedrockGrammarCorrection
 from productDescriptionGeneration import productDescriptionGeneration
 from imageGeneration import BedrockImageGeneration
+from medical_scribing import MedicalScribe
+from query_csv import QueryCSV
+from icd_code_generator import ICDCodeGenerator
 
 import os
 from loguru import logger
-
-
-# _instance = None
 
 
 def get_instance(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
@@ -90,6 +77,7 @@ def get_instance_grammar_correction(aws_access_key_id=None, aws_secret_access_ke
                                   region_name=region_name)
     return _instance
 
+
 def get_instance_product_description_generation(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
     # global _instance
     # if _instance is None:
@@ -98,6 +86,7 @@ def get_instance_product_description_generation(aws_access_key_id=None, aws_secr
                                   region_name=region_name)
     return _instance
 
+
 def get_instance_image_generation(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
     # global _instance
     # if _instance is None:
@@ -105,6 +94,125 @@ def get_instance_image_generation(aws_access_key_id=None, aws_secret_access_key=
                                        aws_secret_access_key=aws_secret_access_key,
                                        region_name=region_name)
     return _instance
+
+
+def get_instance_icdcode(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+    # global _instance
+    # if _instance is None:
+    _instance = ICDCodeGenerator(aws_access_key_id=aws_access_key_id,
+                                 aws_secret_access_key=aws_secret_access_key,
+                                 region_name=region_name)
+    return _instance
+
+
+def get_instance_query_csv(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+    # global _instance
+    # if _instance is None:
+    _instance = QueryCSV(aws_access_key_id=aws_access_key_id,
+                         aws_secret_access_key=aws_secret_access_key,
+                         region_name=region_name)
+    return _instance
+
+
+def get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+    # global _instance
+    # if _instance is None:
+    _instance = MedicalScribe(input_bucket_name=input_bucket_name, iam_arn=iam_arn, aws_access_key_id=aws_access_key_id,
+                              aws_secret_access_key=aws_secret_access_key,
+                              region_name=region_name)
+    return _instance
+
+
+def medicalscribing(audio_filepath, input_bucket_name, iam_arn, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+    """ Generate medical scribing for the given audio file path. The input can be a local file path or an S3 file path.
+
+    Parameters:
+    audio_filepath (str): The path to the audio file for generating medical scribing.
+                          This can be a local file path or an S3 file path.
+    input_bucket_name (str): The name of the S3 bucket where the input files are stored.
+    iam_arn (str): The IAM Amazon Resource Name (ARN) used for authentication.
+    aws_access_key_id (str, optional): AWS Access Key ID (optional).
+    aws_secret_access_key (str, optional): AWS Secret Access Key (optional).
+    region_name (str, optional): AWS region name for accessing cloud-based resources (optional).
+
+    Returns:
+    (str, str): A tuple containing two strings:
+                    - The first string contains summary report.
+                    - The second string contain transcript.
+    """
+    instance = get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id, aws_secret_access_key, region_name)
+    try:
+        if os.path.exists(audio_filepath): # Check if input is a local file path
+            return instance.fetch_medical_scribing_from_filepath(audio_filepath)
+        elif audio_filepath.startswith('s3://'): # Check if input is an S3 file path
+            return instance.fetch_medical_scribing_from_s3_path(audio_filepath)
+        else:
+            raise ValueError(f"Audio file path is wrong please check that and try again")
+    except Exception as e:
+        user_friendly_error = instance._get_user_friendly_error(e)
+        logger.error(user_friendly_error)
+        return None, None
+
+def icdcoding(input_content, aws_access_key_id=None,
+              aws_secret_access_key=None, region_name=None):
+    """
+    Generate the icd10 code for the given input content. The input can be text, a local file path, or an S3 file path.
+
+    Parameters:
+    input_content (str): The content to be used for generating the icd10 code. This can be a text string, a local file path, or an S3 file path.
+    aws_access_key_id (str, optional): AWS Access Key ID.
+    aws_secret_access_key (str, optional): AWS Secret Access Key.
+    region_name (str, optional): AWS region name for accessing cloud-based resources (optional).
+
+    Returns:
+    json_string: A json_string containing the icd10 entity.
+    """
+    instance = get_instance_icdcode(aws_access_key_id, aws_secret_access_key, region_name)
+    try:
+        if os.path.exists(input_content):  # Check if input is a local file path
+            return instance.generate_code_from_file(input_content)
+        elif input_content.startswith('s3://'):  # Check if input is an S3 file path
+            return instance.generate_code_from_s3_file(input_content)
+        else:  # Assume input is text
+            return instance.generate_icdcode(input_content)
+    except Exception as e:
+        user_friendly_error = instance._get_user_friendly_error(e)
+        logger.error(user_friendly_error)
+        return None
+
+
+def query_csv(user_query, csv_file_path, model_name=None, aws_access_key_id=None,
+              aws_secret_access_key=None, region_name=None):
+    """
+    Process a user query on a CSV file located either locally or on S3 and invoke a model.
+
+    Parameters:
+    user_query (str): The query string provided by the user.
+    csv_file_path (str): The path to the CSV file; can be a local file path or an S3 URI.
+    model_name (str, optional): The name of the model to use for processing the query.
+    aws_access_key_id (str, optional): AWS Access Key ID.
+    aws_secret_access_key (str, optional): AWS Secret Access Key.
+    region_name (str, optional): AWS region name for accessing cloud-based resources.
+
+    Returns:
+    Any: The result of the model invocation based on the user's query.
+
+    Raises:
+    ValueError: If the CSV file path is invalid or the file cannot be processed.
+    """
+
+    instance = get_instance_query_csv(aws_access_key_id, aws_secret_access_key, region_name)
+    try:
+        if os.path.exists(csv_file_path):  # Check if input is a local file path
+            return instance.query_from_local_path(user_query, csv_file_path, model_name)
+        elif csv_file_path.startswith('s3://'):  # Check if input is an S3 file path
+            return instance.query_from_s3(user_query, csv_file_path, model_name)
+        else:
+            raise ValueError(f"CSV file path is wrong please check that and try again")
+    except Exception as e:
+        user_friendly_error = instance._get_user_friendly_error(e)
+        logger.error(user_friendly_error)
+        return None
 
 
 def imageGeneration(prompt, seed=None, model_name=None, aws_access_key_id=None,

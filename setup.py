@@ -21,7 +21,7 @@ setup(
     ],
     install_requires=["boto3>=1.34.160", "loguru>=0.7.2", "python-docx>=1.1.2", "PyMuPDF>=1.24.9", "langchain>=0.1.12",
                       "langchain_community>=0.0.29", "langchain-experimental>=0.0.54", "psycopg2>=2.9.9",
-                      "PyMySQL>=1.1.1"],
+                      "PyMySQL>=1.1.1", "tabulate>=0.9.0", "langchain-aws>=0.1.17"],
     extras_require={
         "dev": ["twine>=4.0.2"],
     },
