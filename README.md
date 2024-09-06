@@ -1,271 +1,192 @@
-# AvahiAI
+# avahiplatform
 
-Logicsdk is an open source AI framework to build with LLMs on AWS Bedrock. Turn your enterprise use cases into production application in few lines of python code
+avahiplatform is a library that makes your Gen-AI tasks effortless. It provides an easy-to-use interface for working with Large Language Models (LLMs) on AWS Bedrock, allowing you to turn enterprise use cases into production applications with just a few lines of Python code.
 
 ## Quickstart
-## Installation
 
-You can install logic just by running:
-```python
-! pip install logicsdk
+### Installation
 
-import logicsdk
-summarization_output, input_token_cost, output_token_cost, total_cost = logicsdk.summarize("This is a test string to summarize.")
-print("Summary:", summarization_output)
-extraction_output, input_token_cost, output_token_cost, total_cost = logicsdk.structredExtraction("This is a test string for the extraction.")
-print("Extraction:", extraction_output)
-masking_output, input_token_cost, output_token_cost, total_cost = logicsdk.DataMasking("This is a test string to for the Data Masking.")
-print("DataMasking:", masking_output)
-nl2sql_result = logicsdk.nl2sql("What are the names and ages of employees who joined after January 1, 2020?",
-                                db_type = "postgresql", username = "dbuser", password = "dbpassword",
-                                host = "localhost", port = 5432, dbname = "employees"
-                                )
-print("nl2sql generated answer:", nl2sql_result)
+You can install avahiplatform by running:
 
+```bash
+pip install avahiplatform
 ```
 
-## current Features
-- Summarize plain text.
-- Summarize text from local files (`.txt`, `.pdf`, `.docx`).
-- Summarize text from S3 files (`.txt`, `.pdf`, `.docx`).
-- Extract the entities from plain text.
-- Extract the entities from from local files (`.txt`, `.pdf`, `.docx`).
-- Extract the entities from from S3 files (`.txt`, `.pdf`, `.docx`).
-- Mask the entities from the plain text.
-- Mask the entities from text from local files (`.txt`, `.pdf`, `.docx`).
-- Mask the entities from the text from S3 files (`.txt`, `.pdf`, `.docx`).
-- Converts a natural language query into an SQL/PostgreSQL/SQLite query, executes it against the specified database, and returns the results in a user-friendly manner. 
-- Support for custom prompts and different anthropic claude model versions.
-- Error handling with user-friendly messages.
-- And many more to come...
+### Basic Usage
 
-### AWS CLI Installation (Optional but Recommended)
-To configure your AWS credentials easily, you can use the AWS CLI. Install it by following instructions on the [AWS CLI Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
+```python
+import avahiplatform
+
+# Summarization
+summary, input_tokens, output_tokens, cost = avahiplatform.summarize("This is a test string to summarize.")
+print("Summary:", summary)
+
+# Structured Extraction
+extraction, input_tokens, output_tokens, cost = avahiplatform.structredExtraction("This is a test string for extraction.")
+print("Extraction:", extraction)
+
+# Data Masking
+masked_data, input_tokens, output_tokens, cost = avahiplatform.DataMasking("This is a test string for Data Masking.")
+print("Masked Data:", masked_data)
+
+# Natural Language to SQL
+nl2sql_result = avahiplatform.nl2sql("What are the names and ages of employees who joined after January 1, 2020?",
+                                      db_type="postgresql", username="dbuser", password="dbpassword",
+                                      host="localhost", port=5432, dbname="employees")
+print("NL2SQL Result:", nl2sql_result)
+```
+
+## Features
+
+- Text summarization (plain text, local files, S3 files)
+- Structured information extraction
+- Data masking
+- Natural Language to SQL conversion
+- PDF summarization
+- Grammar correction
+- Product description generation
+- Image generation
+- Medical scribing
+- ICD-10 code generation
+- CSV querying
+- Semantic search and Retrieval-Augmented Generation (RAG)
+- Support for custom prompts and different Anthropic Claude model versions
+- Error handling with user-friendly messages
 
 ## Configuration
 
 ### AWS Credentials
 
-AvahiAI requires AWS credentials to access AWS Bedrock and S3 services. You can provide your AWS credentials in two ways:
+avahiplatform requires AWS credentials to access AWS Bedrock and S3 services. You can provide your AWS credentials in two ways:
 
-1. **Default AWS Credentials**: Ensure your AWS credentials are configured in the `~/.aws/credentials` file or by using the AWS CLI.
-2. **Explicit AWS Credentials**: Pass the AWS Access Key and Secret Key when calling the `summarize` function.
+1. **Default AWS Credentials**: Configure your AWS credentials in the `~/.aws/credentials` file or by using the AWS CLI.
+2. **Explicit AWS Credentials**: Pass the AWS Access Key ID and Secret Access Key when calling functions.
 
-### Configuring AWS Credentials Using AWS CLI
+For detailed instructions on setting up AWS credentials, please refer to the [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
 
-After installing the AWS CLI, run the following command to configure your credentials:
+## Usage Examples
 
-```sh
-aws configure
-```
-
-You will be prompted to enter your AWS Access Key ID, Secret Access Key, region, and output format. This will create or update the `~/.aws/credentials` file with your credentials.
-
-### Sample `~/.aws/credentials` File:
-
-```ini
-[default]
-aws_access_key_id = YOUR_ACCESS_KEY
-aws_secret_access_key = YOUR_SECRET_KEY
-```
-
-## Usage
-
-### Importing logicsdk
+### Summarization
 
 ```python
-import logicsdk
+# Summarize text
+summary, _, _, _ = avahiplatform.summarize("Text to summarize")
+
+# Summarize a local file
+summary, _, _, _ = avahiplatform.summarize("path/to/local/file.txt")
+
+# Summarize a file from S3
+summary, _, _, _ = avahiplatform.summarize("s3://bucket-name/file.txt", 
+                                            aws_access_key_id="your_access_key", 
+                                            aws_secret_access_key="your_secret_key")
 ```
 
-### Summarizing Text Strings
+### Structured Extraction
 
 ```python
-summarization_output, input_token_cost, output_token_cost, total_cost = logicsdk.summarize("This is a test string to summarize.")
-print("Summary:", summarization_output)
-print("Input Cost:", input_token_cost)
-print("Output Cost:", output_token_cost)
-print("Cost:", total_cost)
+extraction, _, _, _ = avahiplatform.structredExtraction("Text for extraction")
 ```
 
-## Summarization
-
-### Summarizing Local Files
-
-#### Text File (`.txt`)
+### Data Masking
 
 ```python
-summarization_output, input_token_cost, output_token_cost, total_cost = logicsdk.summarize("path/to/your/file.txt")
-print("Summary:", summarization_output)
+masked_data, _, _, _ = avahiplatform.DataMasking("Text containing sensitive information")
 ```
 
-#### PDF File (`.pdf`)
+### Natural Language to SQL
 
 ```python
-summarization_output, input_token_cost, output_token_cost, total_cost = logicsdk.summarize("path/to/your/file.pdf")
-print("Summary:", summarization_output)
+result = avahiplatform.nl2sql("Your natural language query", 
+                               db_type="postgresql", username="user", password="pass",
+                               host="localhost", port=5432, dbname="mydb")
 ```
 
-#### DOCX File (`.docx`)
+### PDF Summarization
 
 ```python
-summarization_output, input_token_cost, output_token_cost, total_cost = logicsdk.summarize("path/to/your/file.docx")
-print("Summary:", summarization_output)
+summary, _, _, _ = avahiplatform.pdfsummarizer("path/to/file.pdf")
 ```
 
-### Summarizing Files from S3
+### Grammar Correction
 
 ```python
-summarization_output, input_token_cost, output_token_cost, total_cost = logicsdk.summarize("s3://your-bucket-name/your-file.pdf", aws_access_key_id="your_access_key", aws_secret_access_key="your_secret_key")
-print("Summary:", summarization_output)
+corrected_text, _, _, _ = avahiplatform.grammarAssistant("Text with grammatical errors")
 ```
 
-
-### Changing the Default Model
+### Product Description Generation
 
 ```python
-summarization_output, input_token_cost, output_token_cost, total_cost = logicsdk.summarize("path/to/your/file.docx", model_name="haiku-3.0")
-print("Summary:", summarization_output)
+description, _, _, _ = avahiplatform.productDescriptionAssistant("SKU123", "Summer Sale", "Young Adults")
 ```
 
-
-## Extraction
-
-### Extracting from Strings
+### Image Generation
 
 ```python
-extraction_output, input_token_cost, output_token_cost, total_cost = logicsdk.structredExtraction("This is a test string to for the extraction.")
-print("Extraction:", extraction_output)
-print("Input Cost:", input_token_cost)
-print("Output Cost:", output_token_cost)
-print("Cost:", total_cost)
+image, seed, cost = avahiplatform.imageGeneration("A beautiful sunset over mountains")
 ```
 
-
-### Extracting from Local Files
-
-#### Text File (`.txt`)
+### Medical Scribing
 
 ```python
-extraction_output, input_token_cost, output_token_cost, total_cost = logicsdk.structredExtraction("path/to/your/file.txt")
-print("Extraction:", extraction_output)
+summary, transcript = avahiplatform.medicalscribing("path/to/audio.mp3", "input-bucket", "iam-arn")
 ```
 
-#### PDF File (`.pdf`)
+### ICD-10 Code Generation
 
 ```python
-extraction_output, input_token_cost, output_token_cost, total_cost = logicsdk.structredExtraction("path/to/your/file.pdf")
-print("Extraction:", extraction_output)
+icd_code = avahiplatform.icdcoding("Patient presents with severe chest pain")
 ```
 
-#### DOCX File (`.docx`)
+### CSV Querying
 
 ```python
-extraction_output, input_token_cost, output_token_cost, total_cost = logicsdk.structredExtraction("path/to/your/file.docx")
-print("Extraction:", extraction_output)
+result = avahiplatform.query_csv("What is the average age?", "path/to/data.csv")
 ```
 
-### Extracting from Files in S3
+### Semantic Search and RAG
 
 ```python
-extraction_output, input_token_cost, output_token_cost, total_cost = logicsdk.structredExtraction("s3://your-bucket-name/your-file.pdf", aws_access_key_id="your_access_key", aws_secret_access_key="your_secret_key")
-print("Extraction:", extraction_output)
+similar_docs = avahiplatform.perform_semantic_search("Your question", "s3://bucket/documents/")
+answer, sources = avahiplatform.perform_rag_with_sources("Your question", "s3://bucket/documents/")
 ```
-
-
-### Changing the Default Model
-
-```python
-extraction_output, input_token_cost, output_token_cost, total_cost = logicsdk.structredExtraction("path/to/your/file.docx", model_name="haiku-3.0")
-print("Extraction:", extraction_output)
-```
-
-
-## Data Masking
-
-### Extracting from Strings
-
-```python
-masking_output, input_token_cost, output_token_cost, total_cost = logicsdk.DataMasking("This is a test string to for the Data Masking.")
-print("DataMasking:", masking_output)
-print("Input Cost:", input_token_cost)
-print("Output Cost:", output_token_cost)
-print("Cost:", total_cost)
-```
-
-
-### DataMasking from Local Files
-
-#### Text File (`.txt`)
-
-```python
-masking_output, input_token_cost, output_token_cost, total_cost = logicsdk.DataMasking("path/to/your/file.txt")
-print("DataMasking:", masking_output)
-```
-
-#### PDF File (`.pdf`)
-
-```python
-masking_output, input_token_cost, output_token_cost, total_cost = logicsdk.DataMasking("path/to/your/file.pdf")
-print("DataMasking:", masking_output)
-```
-
-#### DOCX File (`.docx`)
-
-```python
-masking_output, input_token_cost, output_token_cost, total_cost = logicsdk.DataMasking("path/to/your/file.docx")
-print("DataMasking:", masking_output)
-```
-
-### DataMasking from Files in S3
-
-```python
-masking_output, input_token_cost, output_token_cost, total_cost = logicsdk.DataMasking("s3://your-bucket-name/your-file.pdf", aws_access_key_id="your_access_key", aws_secret_access_key="your_secret_key")
-print("DataMasking:", masking_output)
-```
-
-### Changing the Default Model
-
-```python
-masking_output, input_token_cost, output_token_cost, total_cost = logicsdk.DataMasking("path/to/your/file.docx", model_name="haiku-3.0")
-print("DataMasking:", masking_output)
-```
-
-## Nl2SQL
-
-### Generate user-friendly answer from the natural language query
-
-```python
-nl2sql_result = logicsdk.nl2sql("What are the names and ages of employees who joined after January 1, 2020?",
-                                db_type = "mysql", username = "dbuser", password = "dbpassword",
-                                host = "localhost", port = 3306, dbname = "employees"
-                                )
-print("nl2sql_result:", nl2sql_result)
-```
-
-
-## Other more Gen-ai task to come
 
 ## Error Handling
 
-AvahiAI provides user-friendly error messages for common issues. Here are some common errors you might encounter:
+avahiplatform provides user-friendly error messages for common issues. Examples include:
 
-1. **Invalid AWS Credentials**
-```sh
-AWS credentials are not set or invalid. Please configure your AWS credentials.
-```
+- Invalid AWS credentials
+- File not found
+- Database connection errors
+- Unexpected errors
 
-2. **File Not Found**
-```sh
-The file at path/to/your/file.pdf does not exist. Please check the file path.
-```
+## Requirements
 
-4. **Unexpected Errors**
-```sh
-An unexpected error occurred: <error message>.
-```
+- Python 3.9 or higher
+- boto3 (>= 1.34.160)
+- loguru (>= 0.7.2)
+- python-docx (>= 1.1.2)
+- PyMuPDF (>= 1.24.9)
+- langchain (>= 0.1.12)
+- langchain_community (>= 0.0.29)
+- langchain-experimental (>= 0.0.54)
+- psycopg2 (>= 2.9.9)
+- PyMySQL (>= 1.1.1)
+- tabulate (>= 0.9.0)
+- langchain-aws (>= 0.1.17)
+
+
 
 ## Contributing
 
-Feel free to open issues or submit pull requests if you find bugs or have features to add.
+We welcome contributions! Feel free to open issues or submit pull requests if you find bugs or have features to add.
 
 ## License
+
+This project is licensed under the MIT License.
+
+## Contact
+
+- Author: Avahi Tech
+- Email: info@avahitech.com
+- GitHub: [https://github.com/avahi-org/avahiplatform](https://github.com/avahi-org/avahiplatform)
+
