@@ -32,11 +32,25 @@ print("Extraction:", extraction)
 masked_data, input_tokens, output_tokens, cost = avahiplatform.DataMasking("This is a test string for Data Masking.")
 print("Masked Data:", masked_data)
 
-# Natural Language to SQL
-nl2sql_result = avahiplatform.nl2sql("What are the names and ages of employees who joined after January 1, 2020?",
-                                      db_type="postgresql", username="dbuser", password="dbpassword",
-                                      host="localhost", port=5432, dbname="employees")
-print("NL2SQL Result:", nl2sql_result)
+# PDF Summarization
+summary, _, _, _ = avahiplatform.summarize("path/to/pdf/file.pdf")
+print("PDF Summary:", summary)
+
+# Grammar Correction
+corrected_text, _, _, _ = avahiplatform.grammarAssistant("Text with grammatical errors")
+print("Corrected Text:", corrected_text)
+
+# Product Description Generation
+description, _, _, _ = avahiplatform.productDescriptionAssistant("SKU123", "Summer Sale", "Young Adults")
+print("Product Description:", description)
+
+# Image Generation
+image, seed, cost = avahiplatform.imageGeneration("A beautiful sunset over mountains")
+print("Generated Image:", image)
+
+# Medical Scribing
+medical_summary, _ = avahiplatform.medicalscribing("path/to/audio.mp3", "input-bucket", "iam-arn")
+print("Medical Summary:", medical_summary)
 ```
 
 ## Features
