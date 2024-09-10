@@ -66,7 +66,6 @@ print("Medical Summary:", medical_summary)
 - Medical scribing
 - ICD-10 code generation
 - CSV querying
-- Semantic search and Retrieval-Augmented Generation (RAG)
 - Support for custom prompts and different Anthropic Claude model versions
 - Error handling with user-friendly messages
 
@@ -177,13 +176,6 @@ icd_code = avahiplatform.icdcoding("local_file.txt")
 
 ```python
 result = avahiplatform.query_csv("What is the average age?", "path/to/data.csv")
-```
-
-### Semantic Search and RAG
-
-```python
-similar_docs = avahiplatform.perform_semantic_search("Your question", "s3://bucket/documents/")
-answer, sources = avahiplatform.perform_rag_with_sources("Your question", "s3://bucket/documents/")
 ```
 
 ## Error Handling
