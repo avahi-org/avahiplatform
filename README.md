@@ -193,41 +193,57 @@ icd_code = avahiplatform.icdcoding("local_file.txt")
 result = avahiplatform.query_csv("What is the average age?", "path/to/data.csv")
 ```
 
-## Error Handling
+## Error Handling 🛠️
 
-avahiplatform provides user-friendly error messages for common issues. Examples include:
+AvahiPlatform provides user-friendly error messages for common issues, ensuring you can quickly identify and resolve any problems. Here are some examples:
 
-- Invalid AWS credentials
-- File not found
-- Database connection errors
-- Unexpected errors
+- ❌ Invalid AWS credentials
+- 🔍 File not found
+- 🔌 Database connection errors
+- ⚠️ Unexpected errors
 
-## Requirements
+Our detailed error messages will guide you towards quick resolutions, keeping your development process smooth and efficient.
+
+## Requirements 📋
+
+To use AvahiPlatform, make sure you have the following:
 
 - Python 3.9 or higher
-- boto3 (>= 1.34.160)
-- loguru (>= 0.7.2)
-- python-docx (>= 1.1.2)
-- PyMuPDF (>= 1.24.9)
-- langchain (>= 0.1.12)
-- langchain_community (>= 0.0.29)
-- langchain-experimental (>= 0.0.54)
-- psycopg2 (>= 2.9.9)
-- PyMySQL (>= 1.1.1)
-- tabulate (>= 0.9.0)
-- langchain-aws (>= 0.1.17)
 
+### Required Libraries:
+```
+boto3 >= 1.34.160
+loguru >= 0.7.2
+python-docx >= 1.1.2
+PyMuPDF >= 1.24.9
+langchain >= 0.1.12
+langchain_community >= 0.0.29
+langchain-experimental >= 0.0.54
+psycopg2 >= 2.9.9
+PyMySQL >= 1.1.1
+tabulate >= 0.9.0
+langchain-aws >= 0.1.17
+```
 
+You can install these dependencies using pip. We recommend using a virtual environment for your project.
 
-## Contributing
+## Contributing 🤝
 
-We welcome contributions! Feel free to open issues or submit pull requests if you find bugs or have features to add.
+We welcome contributions from the community! Whether you've found a bug or have a feature in mind, we'd love to hear from you. Here's how you can contribute:
 
-## License
+1. Open an issue to discuss your ideas or report bugs
+2. Fork the repository and create a new branch for your feature
+3. Submit a pull request with your changes
 
-This project is licensed under the MIT License.
+Let's make AvahiPlatform even better together!
 
-## Contact
+## License 📄
+
+This project is licensed under the MIT License. See the [Open-source MIT license](https://opensource.org/licenses/MIT) file for details.
+
+## Contact Us 📬
+
+We're here to help! If you have any questions, suggestions, or just want to say hi, feel free to reach out:
 
 - Author: Avahi Tech
 - Email: info@avahitech.com
