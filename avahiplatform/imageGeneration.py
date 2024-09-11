@@ -69,6 +69,24 @@ class BedrockImageGeneration:
                 "height": 1024,  # Image height in pixels
                 "width": 1024,  # Image width in pixels
             }
+        elif model_name == 'sd3-large':
+            # Create a request payload for Stability AI's SD3 model
+            native_request = {
+                'prompt': prompt,
+                "seed": seed,  # Seed for reproducibility
+            }
+        elif model_name == 'stable-image-ultra':
+            # Create a request payload for Stability AI's Stable Image Ultra model
+            native_request = {
+                'prompt': prompt,
+                "seed": seed,  # Seed for reproducibility
+            }
+        elif model_name == 'stable-image-core':
+            # Create a request payload for Stability AI's Stable Image Ultra model
+            native_request = {
+                'prompt': prompt,
+                "seed": seed,  # Seed for reproducibility
+            }
             
         body = json.dumps(native_request)
         
@@ -89,7 +107,7 @@ class BedrockImageGeneration:
                 total_cost = output_cost
                 
                 result = self._transform_response_to_pillow(response, model_name)
-                logger.info(f"Model invocation successful. Total cost: ${total_cost:.6f}")
+                logger.info(f"Model invocation successful. Total cost: ${total_cost:.2f}")
                 return result, seed, total_cost
 
             except self.bedrock.exceptions.ThrottlingException as e:
@@ -114,6 +132,15 @@ class BedrockImageGeneration:
         elif model_name.lower() == "sdxl":
             model_id = "stability.stable-diffusion-xl-v1"
             output_cost = 0.04
+        elif model_name.lower() == "sd3-large":
+            model_id = "stability.sd3-large-v1:0"
+            output_cost = 0.08
+        elif model_name.lower() == "stable-image-ultra":
+            model_id = "stability.stable-image-ultra-v1:0"
+            output_cost = 0.14
+        elif model_name.lower() == "stable-image-core":
+            model_id = "stability.stable-image-core-v1:0"
+            output_cost = 0.04
         else:
             logger.error(f"Unrecognized model name: {model_name}")
             raise ValueError(f"Unrecognized model name: {model_name}")
@@ -137,6 +164,12 @@ class BedrockImageGeneration:
             base64_image = model_response["images"][0]
         elif model_name == 'sdxl':
             base64_image = model_response["artifacts"][0]["base64"]
+        elif model_name == 'sd3-large':
+            base64_image = model_response["images"][0]
+        elif model_name == 'stable-image-ultra':
+            base64_image = model_response["images"][0]
+        elif model_name == 'stable-image-core':
+            base64_image = model_response["images"][0]
             
         image_decoded = base64.b64decode(base64_image)
         image_decoded = BytesIO(image_decoded)
