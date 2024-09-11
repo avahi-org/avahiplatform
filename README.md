@@ -82,15 +82,19 @@ print("Medical Summary:", medical_summary)
 
 ## Configuration
 
-### AWS Credentials
+### AWS Credentials Setup 🔐
+AvahiPlatform requires AWS credentials to access AWS Bedrock and S3 services. You have two options for providing your AWS credentials:
 
-avahiplatform requires AWS credentials to access AWS Bedrock and S3 services. You can provide your AWS credentials in two ways:
+Default AWS Credentials
+- Configure your AWS credentials in the ~/.aws/credentials file
+- Or use the AWS CLI to set up your credentials
 
-1. **Default AWS Credentials**: Configure your AWS credentials in the `~/.aws/credentials` file or by using the AWS CLI.
-2. **Explicit AWS Credentials**: Pass the AWS Access Key ID and Secret Access Key when calling functions.
+Explicit AWS Credentials
+- Pass the AWS Access Key ID and Secret Access Key directly when calling functions
 
-For detailed instructions on setting up AWS credentials, please refer to the [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
+💡 Tip: For detailed instructions on setting up AWS credentials, please refer to the [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
 
+Ensuring your AWS credentials are correctly set up will allow you to seamlessly use all of AvahiPlatform's powerful features. If you encounter any issues with authentication, double-check your credential configuration or reach out to our support team for assistance.
 ## Usage Examples
 
 ### Summarization
