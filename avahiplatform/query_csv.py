@@ -54,6 +54,7 @@ class QueryCSV:
             verbose=False,
             agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             allow_dangerous_code=True,
+            agent_executor_kwargs={"handle_parsing_errors": True}
         )
         langchain.debug = False
 
