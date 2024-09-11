@@ -51,31 +51,31 @@ import avahiplatform
 summary, input_tokens, output_tokens, cost = avahiplatform.summarize("This is a test string to summarize.")
 print("Summary:", summary)
 
-# Structured Extraction
+# Structured Extraction - Structured information extraction 🏗️
 extraction, input_tokens, output_tokens, cost = avahiplatform.structredExtraction("This is a test string for extraction.")
 print("Extraction:", extraction)
 
-# Data Masking
+# Data Masking - Data masking 🕵️‍♀️
 masked_data, input_tokens, output_tokens, cost = avahiplatform.DataMasking("This is a test string for Data Masking.")
 print("Masked Data:", masked_data)
 
-# PDF Summarization
+# PDF Summarization - PDF summarization 📄
 summary, _, _, _ = avahiplatform.summarize("path/to/pdf/file.pdf")
 print("PDF Summary:", summary)
 
-# Grammar Correction
+# Grammar Correction - Grammar correction ✍️
 corrected_text, _, _, _ = avahiplatform.grammarAssistant("Text with grammatical errors")
 print("Corrected Text:", corrected_text)
 
-# Product Description Generation
+# Product Description Generation - Product description generation 🛍️
 description, _, _, _ = avahiplatform.productDescriptionAssistant("SKU123", "Summer Sale", "Young Adults")
 print("Product Description:", description)
 
-# Image Generation
+# Image Generation - Image generation 🎨
 image, seed, cost = avahiplatform.imageGeneration("A beautiful sunset over mountains")
 print("Generated Image:", image)
 
-# Medical Scribing
+# Medical Scribing - Medical scribing 👩‍⚕️
 medical_summary, _ = avahiplatform.medicalscribing("path/to/audio.mp3", "input-bucket", "iam-arn")
 print("Medical Summary:", medical_summary)
 ```
