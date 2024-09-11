@@ -25,12 +25,29 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 - AWS Bedrock integration: We've done the heavy lifting to seamlessly connect you with the power of AWS Bedrock. It's like having a direct line to AI goodness!
 - Enterprise-ready: Whether you're a solo developer or part of a large team, AvahiPlatform scales with your needs. From proof-of-concept to production, we've got you covered.
 - Python-friendly: If you can Python, you can AvahiPlatform. It's that simple!
+
+## 🧱 What can you build with avahiplatform? 
+
+- Text summarization (plain text, local files, S3 files) 📝
+- Structured information extraction 🏗️
+- Data masking 🕵️‍♀️
+- Natural Language to SQL conversion 🗣️➡️💾
+- PDF summarization 📄
+- Grammar correction ✍️
+- Product description generation 🛍️
+- Image generation 🎨
+- Medical scribing 👩‍⚕️
+- ICD-10 code generation 🏥
+- CSV querying 📊
+- Support for custom prompts and different Anthropic Claude model versions 🧠
+- Error handling with user-friendly messages 🛠️
+
 ### Basic Usage
 
 ```python
 import avahiplatform
 
-# Summarization
+# Summarization - Text summarization (plain text, local files, S3 files) 📝
 summary, input_tokens, output_tokens, cost = avahiplatform.summarize("This is a test string to summarize.")
 print("Summary:", summary)
 
@@ -62,22 +79,6 @@ print("Generated Image:", image)
 medical_summary, _ = avahiplatform.medicalscribing("path/to/audio.mp3", "input-bucket", "iam-arn")
 print("Medical Summary:", medical_summary)
 ```
-
-## Features
-
-- Text summarization (plain text, local files, S3 files)
-- Structured information extraction
-- Data masking
-- Natural Language to SQL conversion
-- PDF summarization
-- Grammar correction
-- Product description generation
-- Image generation
-- Medical scribing
-- ICD-10 code generation
-- CSV querying
-- Support for custom prompts and different Anthropic Claude model versions
-- Error handling with user-friendly messages
 
 ## Configuration
 
