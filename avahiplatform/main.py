@@ -11,6 +11,21 @@ from .medical_scribing import MedicalScribe
 from .query_csv import QueryCSV
 from .icd_code_generator import ICDCodeGenerator
 
+# from summarizer import BedrockSummarizer
+# from structredExtraction import BedrockstructredExtraction
+# from data_masking import BedrockDataMasking
+# from nl2sql import BedrockNL2SQL
+# from rag_semantic_search import RAGSemanticSearch
+# from pdfSummarizer import BedrockPdfSummarizer
+# from grammarCorrection import BedrockGrammarCorrection
+# from productDescriptionGeneration import productDescriptionGeneration
+# from imageGeneration import BedrockImageGeneration
+# from medical_scribing import MedicalScribe
+# from query_csv import QueryCSV
+# from icd_code_generator import ICDCodeGenerator
+# from .chatbot import BedrockChatbot
+
+
 import os
 from loguru import logger
 
@@ -122,6 +137,27 @@ def get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id=No
                               region_name=region_name)
     return _instance
 
+def get_instance_chatbot(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+    _instance = BedrockChatbot(aws_access_key_id=aws_access_key_id,
+                          aws_secret_access_key=aws_secret_access_key,
+                          region_name=region_name)
+    return _instance
+
+def chat_with_bot(chatbot, user_input, model_name=None, aws_access_key_id=None,
+              aws_secret_access_key=None, region_name=None):
+    """
+    Function to interact with the chatbot and handle its response.
+    """
+    instance = get_instance_chatbot(aws_access_key_id, aws_secret_access_key, region_name);
+    try:
+        response = instance.chat(user_input)
+
+        history = chatbot.get_conversation_history()
+        return response, history
+    except Exception as e:
+        user_friendly_error = instance._get_user_friendly_error(e)
+        logger.error(user_friendly_error)
+        return f"An error occurred: {user_friendly_error}"
 
 def medicalscribing(audio_filepath, input_bucket_name, iam_arn, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
     """ Generate medical scribing for the given audio file path. The input can be a local file path or an S3 file path.
@@ -509,4 +545,3 @@ def perform_rag_with_sources(question, s3_path, aws_access_key_id=None, aws_secr
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
         return None, None
-    
