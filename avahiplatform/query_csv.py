@@ -5,10 +5,49 @@ import botocore.exceptions
 import pandas as pd
 import io
 import os
-import langchain
-from langchain.agents.agent_types import AgentType
-from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
-from langchain_aws import ChatBedrock
+import json
+import sys
+
+
+class PythonASTREPL:
+    def __init__(self, locals=None, globals=None):
+        # If no locals or globals are provided, initialize them as empty dictionaries
+        self.locals = locals if locals is not None else {}
+        self.globals = globals if globals is not None else {}
+
+    def run(self, code: str) -> str:
+        """
+        Execute the provided Python code and return the result or error message.
+
+        Args:
+            code (str): The Python code to be executed.
+
+        Returns:
+            str: The result of the code execution or error message.
+        """
+        try:
+            # Check if the code is an expression
+            compiled_code = compile(code, '<string>', 'eval')
+            result = eval(compiled_code, self.globals, self.locals)
+            return repr(result)
+        except SyntaxError:
+            # If not an expression, it's a statement(s)
+            try:
+                # Capture the output of the exec using io.StringIO
+                output = io.StringIO()
+                sys.stdout = output  # Redirect stdout to the StringIO buffer
+
+                compiled_code = compile(code, '<string>', 'exec')
+                exec(compiled_code, self.globals, self.locals)
+
+                sys.stdout = sys.__stdout__  # Reset stdout to its original state
+                return output.getvalue() if output.getvalue() else "Executed Successfully"
+            except Exception as e:
+                sys.stdout = sys.__stdout__  # Reset stdout in case of exception
+                return f"Error: {e}"
+        except Exception as e:
+            sys.stdout = sys.__stdout__  # Reset stdout in case of exception
+            return f"Error: {e}"
 
 
 class QueryCSV:
@@ -41,27 +80,16 @@ class QueryCSV:
             logger.error(f"Error setting up Bedrock client: {str(e)}")
             raise
 
-    def model_invoke(self, query, df, model_name=None, max_retries=15, initial_delay=2):
+    def model_invoke(self, query, df, model_name=None, user_prompt=None, max_retries=15, initial_delay=2):
         if model_name is None:
             model_name = self.default_model_name
 
         model_id, _, _ = self._get_model_details(model_name)
-        llm = ChatBedrock(model_id=model_id, client=self.bedrock, model_kwargs={"temperature": 0})
-
-        agent_executor = create_pandas_dataframe_agent(
-            llm,
-            df,
-            verbose=False,
-            agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            allow_dangerous_code=True,
-            agent_executor_kwargs={"handle_parsing_errors": True}
-        )
-        langchain.debug = False
 
         retries = 0
         while retries < max_retries:
             try:
-                result = agent_executor.invoke(query)["output"]
+                result = self._execute_query(query, df, model_id, user_prompt)
                 return result
 
             except self.bedrock.exceptions.ThrottlingException as e:
@@ -75,6 +103,68 @@ class QueryCSV:
                 break
 
         return None
+
+    def _execute_query(self, query, df, model_id, user_prompt):
+        system_message = """
+        You are an AI assistant tasked with analyzing data in a pandas DataFrame and generate python code for that. 
+        - Your goal is to generate python code to get the answer questions about the data accurately. 
+        - Just give output in python code only, Make sure, you don't write anything else than python code.
+        - Add in the code that NaN values should not come.
+        - df will be given so please dont write `df = pd.read_csv('your_data.csv')`
+        - use print statement to return the output in the console.
+        - Don't add unnecessary filters.
+        - Keep it simple.
+        - If you're unsure about something, say so and explain why.
+        """
+
+        df_info = df.info(verbose=True, show_counts=True)
+        df_head = df.head().to_string()
+        df_dtypes = df.dtypes.to_string()
+        user_message = f"""I have a pandas DataFrame with the following information:
+
+        {df_info}
+
+        Here are the first few rows of the DataFrame:
+
+        {df_head}
+
+        And here are the data types of the columns:
+
+        {df_dtypes}
+
+        My question is: {query}
+
+        Please provide a python code for a given df to generate the answer for question asked, without including any explanation."""
+
+        prompt = user_prompt if user_prompt else f"""
+        SYSTEM: {system_message}
+        USER: {user_message}
+        """
+        messages = [
+            {"role": "user", "content": [{"type": "text", "text": prompt}]}
+        ]
+
+        response = self.bedrock.invoke_model(
+            modelId=model_id,
+            contentType="application/json",
+            accept="application/json",
+            body=json.dumps({
+                "messages": messages,
+                "temperature": 0,
+                "max_tokens": 4096,
+                "anthropic_version": "bedrock-2023-05-31"
+            })
+        )
+
+        response_body = json.loads(response['body'].read())
+        assistant_message = response_body['content'][0]['text']
+
+        print(f"assistant_message: {assistant_message}")
+
+        python_repl = PythonASTREPL(locals={"df": df})
+        answer = python_repl.run(assistant_message)
+
+        return answer
 
     def _get_model_details(self, model_name):
         if model_name.lower() == "sonnet-3.5":
@@ -96,7 +186,7 @@ class QueryCSV:
         logger.info(f"Using model: {model_id}")
         return model_id, input_cost, output_cost
 
-    def query_from_local_path(self, user_query, csv_file_path, model_name=None):
+    def query_from_local_path(self, user_query, csv_file_path, model_name=None, user_prompt=None):
         try:
             df = pd.read_csv(str(csv_file_path))
 
@@ -105,9 +195,9 @@ class QueryCSV:
             logger.error(user_friendly_error)
             raise ValueError(user_friendly_error)
 
-        return self.model_invoke(user_query, df, model_name)
+        return self.model_invoke(user_query, df, model_name, user_prompt)
 
-    def query_from_s3(self, user_query, s3_file_path, model_name=None):
+    def query_from_s3(self, user_query, s3_file_path, model_name=None, user_prompt=None):
         s3 = boto3.client('s3')
         bucket_name, key_name = self._parse_s3_path(s3_file_path)
         try:
@@ -135,7 +225,7 @@ class QueryCSV:
             logger.error(user_friendly_error)
             raise ValueError(user_friendly_error)
 
-        return self.model_invoke(user_query, df, model_name)
+        return self.model_invoke(user_query, df, model_name, user_prompt)
 
     def _parse_s3_path(self, s3_file_path):
         if not s3_file_path.startswith('s3://'):

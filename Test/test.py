@@ -1,5 +1,4 @@
-import avahiai
+import avahiplatform
 
-# summarization_output = avahiai.summarize("./summarize.txt")
-summarization_output = avahiai.summarize("s3://avahi-python-package-data/summarize.txt")
-print(summarization_output[0])
+summarize_url = avahiplatform.summarize.create_url()
+print(f"Gradio public summarize_url: {summarize_url}")
