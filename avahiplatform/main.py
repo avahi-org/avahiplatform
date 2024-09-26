@@ -10,9 +10,14 @@ from .imageGeneration import BedrockImageGeneration
 from .medical_scribing import MedicalScribe
 from .query_csv import QueryCSV
 from .icd_code_generator import ICDCodeGenerator
+from .create_ui_wrapper_from_gradio import FunctionWrapper
+from .chatbot import BedrockChatbot
 
 import os
 from loguru import logger
+from typing import Tuple, Any, Dict, List
+from PIL import Image, ImageDraw
+import gradio as gr
 
 
 def get_instance(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
@@ -50,14 +55,16 @@ def get_instance_nl2sql(aws_access_key_id=None, aws_secret_access_key=None, regi
                               region_name=region_name)
     return _instance
 
+
 _instance = None
 
+
 def get_instance_rag_semantic_search(s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
-    #global _instance
+    # global _instance
     # if _instance is None:
     _instance = RAGSemanticSearch(s3_path, aws_access_key_id=aws_access_key_id,
-                                    aws_secret_access_key=aws_secret_access_key,
-                                    region_name=region_name)
+                                  aws_secret_access_key=aws_secret_access_key,
+                                  region_name=region_name)
     return _instance
 
 
@@ -65,16 +72,17 @@ def get_instance_pdf(aws_access_key_id=None, aws_secret_access_key=None, region_
     # global _instance
     # if _instance is None:
     _instance = BedrockPdfSummarizer(aws_access_key_id=aws_access_key_id,
-                                  aws_secret_access_key=aws_secret_access_key,
-                                  region_name=region_name)
+                                     aws_secret_access_key=aws_secret_access_key,
+                                     region_name=region_name)
     return _instance
+
 
 def get_instance_grammar_correction(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
     # global _instance
     # if _instance is None:
     _instance = BedrockGrammarCorrection(aws_access_key_id=aws_access_key_id,
-                                  aws_secret_access_key=aws_secret_access_key,
-                                  region_name=region_name)
+                                         aws_secret_access_key=aws_secret_access_key,
+                                         region_name=region_name)
     return _instance
 
 
@@ -82,8 +90,8 @@ def get_instance_product_description_generation(aws_access_key_id=None, aws_secr
     # global _instance
     # if _instance is None:
     _instance = productDescriptionGeneration(aws_access_key_id=aws_access_key_id,
-                                  aws_secret_access_key=aws_secret_access_key,
-                                  region_name=region_name)
+                                             aws_secret_access_key=aws_secret_access_key,
+                                             region_name=region_name)
     return _instance
 
 
@@ -114,7 +122,8 @@ def get_instance_query_csv(aws_access_key_id=None, aws_secret_access_key=None, r
     return _instance
 
 
-def get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+def get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id=None, aws_secret_access_key=None,
+                                region_name=None):
     # global _instance
     # if _instance is None:
     _instance = MedicalScribe(input_bucket_name=input_bucket_name, iam_arn=iam_arn, aws_access_key_id=aws_access_key_id,
@@ -123,7 +132,15 @@ def get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id=No
     return _instance
 
 
-def medicalscribing(audio_filepath, input_bucket_name, iam_arn, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+def get_instance_chatbot(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+    _instance = BedrockChatbot(aws_access_key_id=aws_access_key_id,
+                          aws_secret_access_key=aws_secret_access_key,
+                          region_name=region_name)
+    return _instance
+
+
+def medicalscribing(audio_filepath, input_bucket_name, iam_arn, aws_access_key_id=None, aws_secret_access_key=None,
+                    region_name=None) -> Tuple[str, str]:
     """ Generate medical scribing for the given audio file path. The input can be a local file path or an S3 file path.
 
     Parameters:
@@ -140,11 +157,12 @@ def medicalscribing(audio_filepath, input_bucket_name, iam_arn, aws_access_key_i
                     - The first string contains summary report.
                     - The second string contain transcript.
     """
-    instance = get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id, aws_secret_access_key, region_name)
+    instance = get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id, aws_secret_access_key,
+                                           region_name)
     try:
-        if os.path.exists(audio_filepath): # Check if input is a local file path
+        if os.path.exists(audio_filepath):  # Check if input is a local file path
             return instance.fetch_medical_scribing_from_filepath(audio_filepath)
-        elif audio_filepath.startswith('s3://'): # Check if input is an S3 file path
+        elif audio_filepath.startswith('s3://'):  # Check if input is an S3 file path
             return instance.fetch_medical_scribing_from_s3_path(audio_filepath)
         else:
             raise ValueError(f"Audio file path is wrong please check that and try again")
@@ -153,8 +171,9 @@ def medicalscribing(audio_filepath, input_bucket_name, iam_arn, aws_access_key_i
         logger.error(user_friendly_error)
         return None, None
 
+
 def icdcoding(input_content, aws_access_key_id=None,
-              aws_secret_access_key=None, region_name=None):
+              aws_secret_access_key=None, region_name=None) -> str:
     """
     Generate the icd10 code for the given input content. The input can be text, a local file path, or an S3 file path.
 
@@ -178,11 +197,11 @@ def icdcoding(input_content, aws_access_key_id=None,
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None
+        return "None"
 
 
-def query_csv(user_query, csv_file_path, model_name=None, aws_access_key_id=None,
-              aws_secret_access_key=None, region_name=None):
+def query_csv(user_query, csv_file_path, user_prompt=None, model_name=None, aws_access_key_id=None,
+              aws_secret_access_key=None, region_name=None) -> str:
     """
     Process a user query on a CSV file located either locally or on S3 and invoke a model.
 
@@ -204,21 +223,21 @@ def query_csv(user_query, csv_file_path, model_name=None, aws_access_key_id=None
     instance = get_instance_query_csv(aws_access_key_id, aws_secret_access_key, region_name)
     try:
         if os.path.exists(csv_file_path):  # Check if input is a local file path
-            return instance.query_from_local_path(user_query, csv_file_path, model_name)
+            return instance.query_from_local_path(user_query, csv_file_path, model_name, user_prompt)
         elif csv_file_path.startswith('s3://'):  # Check if input is an S3 file path
-            return instance.query_from_s3(user_query, csv_file_path, model_name)
+            return instance.query_from_s3(user_query, csv_file_path, model_name, user_prompt)
         else:
             raise ValueError(f"CSV file path is wrong please check that and try again")
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None
+        return "None"
 
 
 def imageGeneration(prompt, seed=None, model_name=None, aws_access_key_id=None,
-                    aws_secret_access_key=None, region_name=None):
+                    aws_secret_access_key=None, region_name=None) -> Tuple[Image.Image, str, str]:
     """
-    Generates an image based on the provided prompt using a specified or default model. 
+    Generates an image based on the provided prompt using a specified or default model.
 
     Parameters:
     prompt (str): The text description used to generate the image.
@@ -237,13 +256,16 @@ def imageGeneration(prompt, seed=None, model_name=None, aws_access_key_id=None,
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None, None, 0.0
-    
+        # Create a blank image
+        blank_image = Image.new('RGB', (1024, 1024), color=(0, 0, 0))  # Blank image
+        draw = ImageDraw.Draw(blank_image)
+        draw.text((512, 512), "Error", fill=(255, 255, 255))  # Optional: Draw some error text
+        return blank_image, "None", "0.0"
 
 
 def nl2sql(nl_query, db_type, username, password, host,
            port, dbname, db_path=None, user_prompt=None,
-           model_name=None, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+           model_name=None, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> str:
     """
        Converts a natural language query into an SQL query, executes it against the specified database,
        and returns the results in a user-friendly manner.
@@ -274,11 +296,11 @@ def nl2sql(nl_query, db_type, username, password, host,
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None
+        return "None"
 
 
 def summarize(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
-              aws_secret_access_key=None, region_name=None):
+              aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
     Summarizes the given input content. The input can be text, a local file path, or an S3 file path.
 
@@ -304,11 +326,11 @@ def summarize(input_content, user_prompt=None, model_name=None, aws_access_key_i
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None, 0, 0, 0.0
+        return "None", "0", "0", "0.0"
 
 
 def structredExtraction(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
-                        aws_secret_access_key=None, region_name=None):
+                        aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
     Extract the given input content. The input can be text, a local file path, or an S3 file path.
 
@@ -334,11 +356,11 @@ def structredExtraction(input_content, user_prompt=None, model_name=None, aws_ac
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None, 0, 0, 0.0
+        return "None", "0", "0", "0.0"
 
 
 def DataMasking(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
-                aws_secret_access_key=None, region_name=None):
+                aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
     Extract the given input content. The input can be text, a local file path, or an S3 file path.
 
@@ -364,11 +386,11 @@ def DataMasking(input_content, user_prompt=None, model_name=None, aws_access_key
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None, 0, 0, 0.0
-    
+        return "None", "0", "0", "0.0"
+
 
 def pdfsummarizer(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
-              aws_secret_access_key=None, region_name=None):
+                  aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
     Summarizes the given pdf file. The input should be pdf file.
 
@@ -392,10 +414,11 @@ def pdfsummarizer(input_content, user_prompt=None, model_name=None, aws_access_k
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None, 0, 0, 0.0
+        return "None", "0", "0", "0.0"
+
 
 def grammarAssistant(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
-              aws_secret_access_key=None, region_name=None):
+                     aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
     Corrects the grammar of the given input content. The input can be text, a local file path, or an S3 file path.
 
@@ -424,10 +447,12 @@ def grammarAssistant(input_content, user_prompt=None, model_name=None, aws_acces
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None, 0, 0, 0.0
+        return "None", "0", "0", "0.0"
 
-def productDescriptionAssistant(product_sku, event_name, customer_segmentation, user_prompt=None, model_name=None, aws_access_key_id=None,
-              aws_secret_access_key=None, region_name=None):
+
+def productDescriptionAssistant(product_sku, event_name, customer_segmentation, user_prompt=None, model_name=None,
+                                aws_access_key_id=None,
+                                aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
     Generates a product description based on the given inputs: product SKU, event name, and customer segmentation.
     Parameters:
@@ -455,16 +480,18 @@ def productDescriptionAssistant(product_sku, event_name, customer_segmentation, 
     instance = get_instance_product_description_generation(aws_access_key_id, aws_secret_access_key, region_name)
     try:
         if event_name and customer_segmentation:  # Check if input having event name and customer segmentation
-            return instance.generate_product_description(product_sku, event_name, customer_segmentation, user_prompt, model_name)
+            return instance.generate_product_description(product_sku, event_name, customer_segmentation, user_prompt,
+                                                         model_name)
         else:  # Assume input is text
-            raise ValueError("Incomplete input provided. Please ensure you provide the product SKU, event name, and customer segmentation to generate the product description.")
+            raise ValueError(
+                "Incomplete input provided. Please ensure you provide the product SKU, event name, and customer segmentation to generate the product description.")
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None, 0, 0, 0.0
-    
+        return "None", "0", "0", "0.0"
 
-def perform_semantic_search(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+
+def perform_semantic_search(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> list[dict[str, Any]]:
     """
     Perform semantic search on the given question.
 
@@ -485,9 +512,10 @@ def perform_semantic_search(question, s3_path, aws_access_key_id=None, aws_secre
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None
+        return []
 
-def perform_rag_with_sources(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+
+def perform_rag_with_sources(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> Tuple[str, dict[str, list[str]]]:
     """
     Perform RAG with sources on the given question.
 
@@ -504,9 +532,117 @@ def perform_rag_with_sources(question, s3_path, aws_access_key_id=None, aws_secr
     instance = get_instance_rag_semantic_search(s3_path, aws_access_key_id, aws_secret_access_key, region_name)
     try:
         answer, sources = instance.rag_with_sources(question)
-        return answer, sources
+        return answer, {"sources": sources}
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
-        return None, None
-    
+        return "None", {"sources": []}
+
+
+class Chatbot:
+    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+        self.region_name = region_name
+        self.instance = None  # Will be set later
+        self.system_prompt = None
+
+    def initialize_instance(self, system_prompt):
+        self.system_prompt = system_prompt
+        self.instance = get_instance_chatbot(self.aws_access_key_id, self.aws_secret_access_key, self.region_name)
+
+    def chat(self, user_input, system_prompt=None, model_name=None):
+        try:
+            if system_prompt and (self.system_prompt is None or self.system_prompt != system_prompt):
+                self.initialize_instance(system_prompt)
+            response = self.instance.chat(user_input, self.system_prompt, model_name)
+            return response
+        except Exception as e:
+            user_friendly_error = self.instance._get_user_friendly_error(e)
+            logger.error(user_friendly_error)
+            return f"An error occurred: {user_friendly_error}", []
+
+    def get_history(self):
+        try:
+            history = self.instance.get_conversation_history()
+            return history
+        except Exception as e:
+            user_friendly_error = self.instance._get_user_friendly_error(e)
+            logger.error(user_friendly_error)
+            return f"An error occurred: {user_friendly_error}"
+
+    def clear_history(self):
+        try:
+            self.instance.clear_conversation_history()
+            return "Conversation history cleared."
+        except Exception as e:
+            user_friendly_error = self.instance._get_user_friendly_error(e)
+            logger.error(user_friendly_error)
+            return f"An error occurred: {user_friendly_error}"
+
+    def create_url(self):
+        with gr.Blocks() as demo:
+            with gr.Row():
+                gr.Markdown("<h1 align='center'>Interactive Chatbot</h1>")
+
+            with gr.Row():
+                with gr.Column(scale=1):
+                    system_prompt_input = gr.Textbox(
+                        label="System Prompt",
+                        placeholder="Enter system prompt here...",
+                        lines=2
+                    )
+                    chat_input = gr.Textbox(
+                        label="User Input",
+                        placeholder="Enter your message here...",
+                        lines=2
+                    )
+                    model_name_input = gr.Textbox(
+                        label="Model Name",
+                        value="sonnet-3"
+                    )
+                    send_button = gr.Button("Send")
+                    clear_button = gr.Button("Clear History")
+                    history_button = gr.Button("Get History")
+
+                with gr.Column(scale=2):
+                    chat_output = gr.Textbox(label="Chatbot Responses", interactive=False,
+                                             placeholder="Responses will appear here...")
+                    history_output = gr.Textbox(label="Conversation History", interactive=False,
+                                                placeholder="History will appear here...")
+
+            def chat_fn(user_input, system_prompt, model_name):
+                response = self.chat(user_input, system_prompt, model_name)
+                return response
+
+            def clear_history_fn():
+                return self.clear_history()
+
+            def get_history_fn():
+                return self.get_history()
+
+            send_button.click(chat_fn, inputs=[chat_input, system_prompt_input, model_name_input],
+                              outputs=[chat_output])
+            clear_button.click(clear_history_fn, inputs=[], outputs=[chat_output])
+            history_button.click(get_history_fn, inputs=[], outputs=[history_output])
+
+        demo.launch(share=True)
+
+
+# FunctionWrapper for creating gradio url
+class AvahiPlatform:
+    def __init__(self):
+        self.summarize = FunctionWrapper(summarize)
+        self.medicalscribing = FunctionWrapper(medicalscribing)
+        self.icdcoding = FunctionWrapper(icdcoding)
+        self.query_csv = FunctionWrapper(query_csv)
+        self.imageGeneration = FunctionWrapper(imageGeneration)
+        self.nl2sql = FunctionWrapper(nl2sql)
+        self.structredExtraction = FunctionWrapper(structredExtraction)
+        self.DataMasking = FunctionWrapper(DataMasking)
+        self.pdfsummarizer = FunctionWrapper(pdfsummarizer)
+        self.grammarAssistant = FunctionWrapper(grammarAssistant)
+        self.productDescriptionAssistant = FunctionWrapper(productDescriptionAssistant)
+        self.perform_semantic_search = FunctionWrapper(perform_semantic_search)
+        self.perform_rag_with_sources = FunctionWrapper(perform_rag_with_sources)
+        self.chatbot = Chatbot

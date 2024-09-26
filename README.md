@@ -16,6 +16,7 @@ pip install avahiplatform
 ## Welcome to AvahiPlatform! 🚀
 Hey there, AI enthusiast! 👋 Are you ready to supercharge your Gen-AI projects? Look no further than AvahiPlatform - your new best friend in the world of Large Language Models (LLMs)!
 
+With AvahiPlatform, you can **create and deploy GenAI applications on Bedrock in just 60 seconds**. It's that fast and easy!
 ### What's AvahiPlatform all about?
 AvahiPlatform is not just a library; it's your ticket to effortless AI-powered applications. We've taken the complexity out of working with LLMs on AWS Bedrock, so you can focus on what really matters - bringing your brilliant ideas to life!
 
@@ -25,6 +26,7 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 - AWS Bedrock integration: We've done the heavy lifting to seamlessly connect you with the power of AWS Bedrock. It's like having a direct line to AI goodness!
 - Enterprise-ready: Whether you're a solo developer or part of a large team, AvahiPlatform scales with your needs. From proof-of-concept to production, we've got you covered.
 - Python-friendly: If you can Python, you can AvahiPlatform. It's that simple!
+- Global Gradio URL: Quickly generate and share a URL to allow others to experience your functionality directly from your running environment.
 
 ## 🧱 What can you build with avahiplatform? 
 
@@ -39,6 +41,10 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 - Medical scribing 👩‍⚕️
 - ICD-10 code generation 🏥
 - CSV querying 📊
+- Retrieval-Augmented Generation (RaG) with Sources 🔍📚
+- Semantic Search 🔎💡
+- Chatbot 🤖
+- Global gradio URL for Any Functionality/Features 🌐
 - Support for custom prompts and different Anthropic Claude model versions 🧠
 - Error handling with user-friendly messages 🛠️
 
@@ -78,6 +84,61 @@ print("Generated Image:", image)
 # Medical Scribing - Medical scribing 👩‍⚕️
 medical_summary, _ = avahiplatform.medicalscribing("path/to/audio.mp3", "input-bucket", "iam-arn")
 print("Medical Summary:", medical_summary)
+
+# Icd10code Generation 🏥
+codes = avahiplatform.icdcoding("Any prescription or path/to/prescription.txt")
+print("Icd 10 codes:", codes)
+
+# CSV querying 📊
+csv_query_answer = avahiplatform.query_csv("How many active locations are there in each region?", csv_file_path="path/to/input_csv.csv")
+print(f"csv query answer: {csv_query_answer}")
+
+# RaG with Sources 🔍📚
+answer, sources = avahiplatform.perform_rag_with_sources("What is kafka?", s3_path="s3://your-bucket-path-where-doc-is-present/")
+print(f"Generated answer: {answer}")
+print(f"Retrieved sourcce: {sources}")
+
+# Semantic Search 🔎💡
+similar_docs = avahiplatform.perform_semantic_search("What is kafka?", s3_path="s3://your-bucket-path-where-doc-is-present/")
+print(f"similar docs: {similar_docs}")
+
+# Chatbot 🤖
+--------------------------------
+chatbot = avahiplatform.chatbot()
+chatbot.initialize_instance(system_prompt="You are a python developer, you only answer queries related to python only, if you get any other queries, then please say I don't know")
+chatbot_response = chatbot.chat(user_input="Create me a function to add 2 numbers")
+print(f"chatbot_response: {chatbot_response}")
+
+chatbot_response = chatbot.chat(user_input="What is avahi?")
+print(f"chatbot_response: {chatbot_response}")
+
+# Get chat history
+chatbot_history = chatbot.get_history()
+print(chatbot_history)
+
+# clear_chat_history
+chatbot.clear_history()
+---------------------------------------
+
+# Few examples for getting global gradio URL for Any Functionality/Features 🌐
+
+# For summarizer
+avahiplatform.summarize.create_url()
+
+# For medical-scribing
+avahiplatform.medicalscribing.create_url()
+
+# For csv querying
+avahiplatform.query_csv.create_url()
+
+# For RAG with sources
+avahiplatform.perform_rag_with_sources.create_url()
+
+# For chatbot we first have initialize chatbot and then we can create the url
+chatbot = avahiplatform.chatbot()
+chatbot.create_url()
+
+# This will generate a global URL which you can share with anyone, allowing them to explore and utilize any of the features which is running in your environment using avahiplatform sdk
 ```
 
 ## Configuration
@@ -193,6 +254,21 @@ icd_code = avahiplatform.icdcoding("local_file.txt")
 result = avahiplatform.query_csv("What is the average age?", "path/to/data.csv")
 ```
 
+### Global Gradio URL for Any Functionality/Features 🌐
+
+```python
+avahiplatform.feature_name.create_url()
+
+For example:
+- avahiplatform.summarize.create_url()
+- avahiplatform.medicalscribing.create_url()
+
+# For interactive chatbot
+chatbot = avahiplatform.chatbot()
+chatbot.create_url()
+```
+
+
 ## Error Handling 🛠️
 
 AvahiPlatform provides user-friendly error messages for common issues, ensuring you can quickly identify and resolve any problems. Here are some examples:
@@ -212,17 +288,18 @@ To use AvahiPlatform, make sure you have the following:
 
 ### Required Libraries:
 ```
-boto3 >= 1.34.160
-loguru >= 0.7.2
-python-docx >= 1.1.2
-PyMuPDF >= 1.24.9
-langchain >= 0.1.12
-langchain_community >= 0.0.29
-langchain-experimental >= 0.0.54
-psycopg2 >= 2.9.9
-PyMySQL >= 1.1.1
-tabulate >= 0.9.0
-langchain-aws >= 0.1.17
+boto3==1.34.160
+python-docx==1.1.2
+PyMuPDF==1.24.9
+loguru==0.7.2
+setuptools==72.1.0
+chromadb==0.5.3
+sqlalchemy>=2.0.35
+gradio>=4.44.0
+tabulate==0.9.0
+python-magic-bin>=0.4.14
+pillow>=10.4.0
+pandas>=2.2.3
 ```
 
 You can install these dependencies using pip. We recommend using a virtual environment for your project.
