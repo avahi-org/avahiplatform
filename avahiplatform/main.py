@@ -10,6 +10,7 @@ from .imageGeneration import BedrockImageGeneration
 from .medical_scribing import MedicalScribe
 from .query_csv import QueryCSV
 from .icd_code_generator import ICDCodeGenerator
+from .service_now_integration import ServiceNowIntegration
 
 import os
 from loguru import logger
@@ -49,8 +50,6 @@ def get_instance_nl2sql(aws_access_key_id=None, aws_secret_access_key=None, regi
                               aws_secret_access_key=aws_secret_access_key,
                               region_name=region_name)
     return _instance
-
-_instance = None
 
 def get_instance_rag_semantic_search(s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
     #global _instance
@@ -122,6 +121,25 @@ def get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id=No
                               region_name=region_name)
     return _instance
 
+
+def get_instance_servicenow(instance_url, username, password):
+    """
+    Create and return an instance of ServiceNowIntegration.
+
+    Parameters:
+    instance_url (str): The URL of your ServiceNow instance.
+    username (str): ServiceNow username.
+    password (str): ServiceNow password.
+
+    Returns:
+    ServiceNowIntegration: An instance of the ServiceNowIntegration class.
+    """
+    try:
+        return ServiceNowIntegration(instance_url, username, password)
+    except Exception as e:
+        user_friendly_error = f"Error creating ServiceNow instance: {str(e)}"
+        logger.error(user_friendly_error)
+        return None
 
 def medicalscribing(audio_filepath, input_bucket_name, iam_arn, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
     """ Generate medical scribing for the given audio file path. The input can be a local file path or an S3 file path.
@@ -510,3 +528,37 @@ def perform_rag_with_sources(question, s3_path, aws_access_key_id=None, aws_secr
         logger.error(user_friendly_error)
         return None, None
     
+def summarize_servicenow_incident(instance_url, username, password, sys_id, aws_access_key_id=None,
+                                  aws_secret_access_key=None, region_name=None):
+    """
+    Retrieve an incident from ServiceNow and generate a summary.
+
+    Parameters:
+    instance_url (str): The URL of your ServiceNow instance.
+    username (str): ServiceNow username.
+    password (str): ServiceNow password.
+    sys_id (str): The sys_id of the incident to summarize.
+    aws_access_key_id (str, optional): AWS Access Key ID.
+    aws_secret_access_key (str, optional): AWS Secret Access Key.
+    region_name (str, optional): AWS region name for accessing cloud-based resources.
+
+    Returns:
+    tuple: A tuple containing the summary text, input token count, output token count, and the cost of the operation.
+    """
+    servicenow_instance = get_instance_servicenow(instance_url, username, password)
+    summarizer_instance = get_instance(aws_access_key_id, aws_secret_access_key, region_name)
+
+    try:
+        incident_details = servicenow_instance.get_incident_details(sys_id)
+        if incident_details is None:
+            raise ValueError("Failed to retrieve incident details from ServiceNow.")
+
+        user_prompt = "Summarize the following ServiceNow incident, highlighting key information such as the issue, priority, and current status:"
+
+        summary, input_tokens, output_tokens, cost = summarizer_instance.summarize_text(incident_details, user_prompt)
+
+        return summary, input_tokens, output_tokens, cost
+    except Exception as e:
+        user_friendly_error = servicenow_instance._get_user_friendly_error(e)
+        logger.error(user_friendly_error)
+        return None, 0, 0, 0.0
