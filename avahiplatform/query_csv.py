@@ -117,7 +117,7 @@ class QueryCSV:
         - If you're unsure about something, say so and explain why.
         """
 
-        df_info = df.info(verbose=True, show_counts=True)
+        df_info = df.info(verbose=False, show_counts=False)
         df_head = df.head().to_string()
         df_dtypes = df.dtypes.to_string()
         user_message = f"""I have a pandas DataFrame with the following information:
@@ -159,7 +159,7 @@ class QueryCSV:
         response_body = json.loads(response['body'].read())
         assistant_message = response_body['content'][0]['text']
 
-        print(f"assistant_message: {assistant_message}")
+        logger.info(f"assistant_message: {assistant_message}")
 
         python_repl = PythonASTREPL(locals={"df": df})
         answer = python_repl.run(assistant_message)

@@ -50,6 +50,11 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 
 ### Basic Usage
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1D323xAdN0eiM070tjPIE0cofkQLR4zpF?usp=sharing)
+
+With the provided Google Colab notebook, you can easily test and explore the features of this project. Simply click the "Open In Colab" badge above to get started!
+
+
 ```python
 import avahiplatform
 
