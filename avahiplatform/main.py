@@ -14,10 +14,12 @@ from .create_ui_wrapper_from_gradio import FunctionWrapper
 from .chatbot import BedrockChatbot
 
 import os
+import json
 from loguru import logger
 from typing import Tuple, Any, Dict, List
 from PIL import Image, ImageDraw
 import gradio as gr
+from pandas import DataFrame
 
 
 def get_instance(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
@@ -134,8 +136,8 @@ def get_instance_medical_scribe(input_bucket_name, iam_arn, aws_access_key_id=No
 
 def get_instance_chatbot(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
     _instance = BedrockChatbot(aws_access_key_id=aws_access_key_id,
-                          aws_secret_access_key=aws_secret_access_key,
-                          region_name=region_name)
+                               aws_secret_access_key=aws_secret_access_key,
+                               region_name=region_name)
     return _instance
 
 
@@ -200,34 +202,60 @@ def icdcoding(input_content, aws_access_key_id=None,
         return "None"
 
 
-def query_csv(user_query, csv_file_path, user_prompt=None, model_name=None, aws_access_key_id=None,
+def query_csv(user_query, csv_file_paths, user_prompt=None, model_name=None, aws_access_key_id=None,
               aws_secret_access_key=None, region_name=None) -> str:
     """
-    Process a user query on a CSV file located either locally or on S3 and invoke a model.
+    Process a user query on multiple CSV files located either locally or on S3 and invoke a model.
 
     Parameters:
-    user_query (str): The query string provided by the user.
-    csv_file_path (str): The path to the CSV file; can be a local file path or an S3 URI.
-    model_name (str, optional): The name of the model to use for processing the query.
-    aws_access_key_id (str, optional): AWS Access Key ID.
-    aws_secret_access_key (str, optional): AWS Secret Access Key.
-    region_name (str, optional): AWS region name for accessing cloud-based resources.
+        user_query (str): The query string provided by the user.
+        csv_file_paths (dict): A dictionary of file paths with keys as DataFrame names and values as file paths.
+        model_name (str, optional): The name of the model to use for processing the query.
+        aws_access_key_id (str, optional): AWS Access Key ID.
+        aws_secret_access_key (str, optional): AWS Secret Access Key.
+        region_name (str, optional): AWS region name for accessing cloud-based resources.
 
     Returns:
-    Any: The result of the model invocation based on the user's query.
+        Any: The result of the model invocation based on the user's query.
 
     Raises:
-    ValueError: If the CSV file path is invalid or the file cannot be processed.
+        ValueError: If the CSV file path is invalid or the file cannot be processed.
     """
+    instance = get_instance_query_csv(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+                                      region_name=region_name)
+    if isinstance(csv_file_paths, str):
+        logger.info("We received csv_file_paths as a string, processing into the dict")
+        try:
+            # Parse the input string as a dictionary
+            csv_file_paths_dict = json.loads(csv_file_paths)
+            csv_file_paths = csv_file_paths_dict
+        except json.JSONDecodeError:
+            logger.error("Invalid dictionary format! Please enter a valid JSON string.")
 
-    instance = get_instance_query_csv(aws_access_key_id, aws_secret_access_key, region_name)
-    try:
-        if os.path.exists(csv_file_path):  # Check if input is a local file path
-            return instance.query_from_local_path(user_query, csv_file_path, model_name, user_prompt)
-        elif csv_file_path.startswith('s3://'):  # Check if input is an S3 file path
-            return instance.query_from_s3(user_query, csv_file_path, model_name, user_prompt)
+    # Separate file paths into local and S3 paths
+    local_paths = {}
+    s3_paths = {}
+
+    for name, path in csv_file_paths.items():
+        if os.path.exists(path):  # Check if input is a local file path
+            local_paths[name] = path
+        elif path.startswith('s3://'):  # Check if input is an S3 file path
+            s3_paths[name] = path
         else:
-            raise ValueError(f"CSV file path is wrong please check that and try again")
+            raise ValueError(f"Invalid CSV file path '{path}'. Please check and try again.")
+
+    # Execute the queries
+    try:
+        if local_paths and not s3_paths:
+            # If all paths are local
+            return instance.query_from_local_paths(user_query, local_paths, model_name, user_prompt)
+        elif s3_paths and not local_paths:
+            # If all paths are in S3
+            return instance.query_from_s3_paths(user_query, s3_paths, model_name, user_prompt)
+        else:
+            # Handle mixed local and S3 paths if needed
+            raise ValueError(
+                "Cannot handle mixed local and S3 paths in one query. Please provide either only local paths or only S3 paths.")
     except Exception as e:
         user_friendly_error = instance._get_user_friendly_error(e)
         logger.error(user_friendly_error)
@@ -491,7 +519,8 @@ def productDescriptionAssistant(product_sku, event_name, customer_segmentation, 
         return "None", "0", "0", "0.0"
 
 
-def perform_semantic_search(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> list[dict[str, Any]]:
+def perform_semantic_search(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> \
+list[dict[str, Any]]:
     """
     Perform semantic search on the given question.
 
@@ -515,7 +544,8 @@ def perform_semantic_search(question, s3_path, aws_access_key_id=None, aws_secre
         return []
 
 
-def perform_rag_with_sources(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> Tuple[str, dict[str, list[str]]]:
+def perform_rag_with_sources(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> \
+Tuple[str, dict[str, list[str]]]:
     """
     Perform RAG with sources on the given question.
 

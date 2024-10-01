@@ -95,7 +95,13 @@ codes = avahiplatform.icdcoding("Any prescription or path/to/prescription.txt")
 print("Icd 10 codes:", codes)
 
 # CSV querying 📊
-csv_query_answer = avahiplatform.query_csv("How many active locations are there in each region?", csv_file_path="path/to/input_csv.csv")
+csv_files = {
+    "df1": "path/to/1st_csv.csv",
+    "df2": "path/to/2nd_csv.csv"
+}
+# In the `csv_files` dictionary, you can pass any number of CSV files 1 or more than 1, but they must follow the structure where the key is the name and the value is the path(s3_path or local_path).
+csv_query_answer = avahiplatform.query_csv("How many active locations are there in each region?",
+                                           csv_file_paths=csv_files)
 print(f"csv query answer: {csv_query_answer}")
 
 # RaG with Sources 🔍📚
@@ -256,7 +262,14 @@ icd_code = avahiplatform.icdcoding("local_file.txt")
 ### CSV Querying
 
 ```python
-result = avahiplatform.query_csv("What is the average age?", "path/to/data.csv")
+csv_files = {
+    "df1": "path/to/1st_csv.csv",
+    "df2": "path/to/2nd_csv.csv"
+}
+# In the `csv_files` dictionary, you can pass any number of CSV files 1 or more than 1, but they must follow the structure where the key is the name and the value is the path(s3_path or local_path).
+csv_query_answer = avahiplatform.query_csv("<Your query goes here>",
+                                           csv_file_paths=csv_files)
+print(f"csv query answer: {csv_query_answer}")
 ```
 
 ### Global Gradio URL for Any Functionality/Features 🌐
@@ -267,6 +280,7 @@ avahiplatform.feature_name.create_url()
 For example:
 - avahiplatform.summarize.create_url()
 - avahiplatform.medicalscribing.create_url()
+- avahiplatform.query_csv.create_url()
 
 # For interactive chatbot
 chatbot = avahiplatform.chatbot()
