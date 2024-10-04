@@ -27,6 +27,7 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 - Enterprise-ready: Whether you're a solo developer or part of a large team, AvahiPlatform scales with your needs. From proof-of-concept to production, we've got you covered.
 - Python-friendly: If you can Python, you can AvahiPlatform. It's that simple!
 - Global Gradio URL: Quickly generate and share a URL to allow others to experience your functionality directly from your running environment.
+- Observability with metrics tracking and optional Prometheus integration 📊
 
 ## 🧱 What can you build with avahiplatform? 
 
@@ -57,6 +58,10 @@ With the provided Google Colab notebook, you can easily test and explore the fea
 
 ```python
 import avahiplatform
+
+# Initialize observability - You can access these metrics on specified prometheus_port, i.e in this case: 8000
+avahiplatform.initialize_observability(metrics_file='./metrics.jsonl', start_prometheus=True, prometheus_port=8000)
+# If you don't want to get prometheus metrics avahiplatform.initialize_observability(metrics_file='./metrics.jsonl', start_prometheus=True, prometheus_port=8000)
 
 # Summarization - Text summarization (plain text, local files, S3 files) 📝
 summary, input_tokens, output_tokens, cost = avahiplatform.summarize("This is a test string to summarize.")
