@@ -19,3 +19,4 @@ query_csv = avahi_platform.query_csv
 medicalscribing = avahi_platform.medicalscribing
 icdcoding = avahi_platform.icdcoding
 chatbot = avahi_platform.chatbot
+initialize_observability = avahi_platform.initialize_observability

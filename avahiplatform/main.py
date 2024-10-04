@@ -21,6 +21,18 @@ from typing import Tuple, Any, Dict, List
 from PIL import Image, ImageDraw
 import gradio as gr
 
+_instance = None
+
+
+def get_instance(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+    # global _instance
+    # if _instance is None:
+    _instance = BedrockSummarizer(aws_access_key_id=aws_access_key_id,
+                                  aws_secret_access_key=aws_secret_access_key,
+                                  region_name=region_name)
+    return _instance
+
+
 def initialize_observability(metrics_file='metrics.jsonl', start_prometheus=False, prometheus_port=8000):
     """
     Initialize the observability system.
@@ -32,16 +44,6 @@ def initialize_observability(metrics_file='metrics.jsonl', start_prometheus=Fals
     observability.initialize(metrics_file=metrics_file,
                              start_prometheus=start_prometheus,
                              prometheus_port=prometheus_port)
-
-_instance = None
-
-def get_instance(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
-    # global _instance
-    # if _instance is None:
-    _instance = BedrockSummarizer(aws_access_key_id=aws_access_key_id,
-                                  aws_secret_access_key=aws_secret_access_key,
-                                  region_name=region_name)
-    return _instance
 
 
 def get_instance_extraction(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
@@ -689,3 +691,4 @@ class AvahiPlatform:
         self.perform_semantic_search = FunctionWrapper(perform_semantic_search)
         self.perform_rag_with_sources = FunctionWrapper(perform_rag_with_sources)
         self.chatbot = Chatbot
+        self.initialize_observability = initialize_observability
