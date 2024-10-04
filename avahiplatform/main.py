@@ -12,6 +12,7 @@ from .query_csv import QueryCSV
 from .icd_code_generator import ICDCodeGenerator
 from .create_ui_wrapper_from_gradio import FunctionWrapper
 from .chatbot import BedrockChatbot
+from .Observability import observability, track_observability
 
 import os
 import json
@@ -19,8 +20,20 @@ from loguru import logger
 from typing import Tuple, Any, Dict, List
 from PIL import Image, ImageDraw
 import gradio as gr
-from pandas import DataFrame
 
+def initialize_observability(metrics_file='metrics.jsonl', start_prometheus=False, prometheus_port=8000):
+    """
+    Initialize the observability system.
+
+    :param metrics_file: Path to the file where metrics will be logged
+    :param start_prometheus: Whether to start the Prometheus server
+    :param prometheus_port: Port on which to start the Prometheus server
+    """
+    observability.initialize(metrics_file=metrics_file,
+                             start_prometheus=start_prometheus,
+                             prometheus_port=prometheus_port)
+
+_instance = None
 
 def get_instance(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
     # global _instance
@@ -56,10 +69,6 @@ def get_instance_nl2sql(aws_access_key_id=None, aws_secret_access_key=None, regi
                               aws_secret_access_key=aws_secret_access_key,
                               region_name=region_name)
     return _instance
-
-
-_instance = None
-
 
 def get_instance_rag_semantic_search(s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
     # global _instance
@@ -140,7 +149,7 @@ def get_instance_chatbot(aws_access_key_id=None, aws_secret_access_key=None, reg
                                region_name=region_name)
     return _instance
 
-
+@track_observability
 def medicalscribing(audio_filepath, input_bucket_name, iam_arn, aws_access_key_id=None, aws_secret_access_key=None,
                     region_name=None) -> Tuple[str, str]:
     """ Generate medical scribing for the given audio file path. The input can be a local file path or an S3 file path.
@@ -173,7 +182,7 @@ def medicalscribing(audio_filepath, input_bucket_name, iam_arn, aws_access_key_i
         logger.error(user_friendly_error)
         return None, None
 
-
+@track_observability
 def icdcoding(input_content, aws_access_key_id=None,
               aws_secret_access_key=None, region_name=None) -> str:
     """
@@ -201,7 +210,7 @@ def icdcoding(input_content, aws_access_key_id=None,
         logger.error(user_friendly_error)
         return "None"
 
-
+@track_observability
 def query_csv(user_query, csv_file_paths, user_prompt=None, model_name=None, aws_access_key_id=None,
               aws_secret_access_key=None, region_name=None) -> str:
     """
@@ -261,7 +270,7 @@ def query_csv(user_query, csv_file_paths, user_prompt=None, model_name=None, aws
         logger.error(user_friendly_error)
         return "None"
 
-
+@track_observability
 def imageGeneration(prompt, seed=None, model_name=None, aws_access_key_id=None,
                     aws_secret_access_key=None, region_name=None) -> Tuple[Image.Image, str, str]:
     """
@@ -290,7 +299,7 @@ def imageGeneration(prompt, seed=None, model_name=None, aws_access_key_id=None,
         draw.text((512, 512), "Error", fill=(255, 255, 255))  # Optional: Draw some error text
         return blank_image, "None", "0.0"
 
-
+@track_observability
 def nl2sql(nl_query, db_type, username, password, host,
            port, dbname, db_path=None, user_prompt=None,
            model_name=None, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> str:
@@ -326,7 +335,7 @@ def nl2sql(nl_query, db_type, username, password, host,
         logger.error(user_friendly_error)
         return "None"
 
-
+@track_observability
 def summarize(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
               aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
@@ -356,7 +365,7 @@ def summarize(input_content, user_prompt=None, model_name=None, aws_access_key_i
         logger.error(user_friendly_error)
         return "None", "0", "0", "0.0"
 
-
+@track_observability
 def structredExtraction(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
                         aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
@@ -386,7 +395,7 @@ def structredExtraction(input_content, user_prompt=None, model_name=None, aws_ac
         logger.error(user_friendly_error)
         return "None", "0", "0", "0.0"
 
-
+@track_observability
 def DataMasking(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
                 aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
@@ -416,7 +425,7 @@ def DataMasking(input_content, user_prompt=None, model_name=None, aws_access_key
         logger.error(user_friendly_error)
         return "None", "0", "0", "0.0"
 
-
+@track_observability
 def pdfsummarizer(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
                   aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
@@ -444,7 +453,7 @@ def pdfsummarizer(input_content, user_prompt=None, model_name=None, aws_access_k
         logger.error(user_friendly_error)
         return "None", "0", "0", "0.0"
 
-
+@track_observability
 def grammarAssistant(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
                      aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
     """
@@ -477,7 +486,7 @@ def grammarAssistant(input_content, user_prompt=None, model_name=None, aws_acces
         logger.error(user_friendly_error)
         return "None", "0", "0", "0.0"
 
-
+@track_observability
 def productDescriptionAssistant(product_sku, event_name, customer_segmentation, user_prompt=None, model_name=None,
                                 aws_access_key_id=None,
                                 aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
@@ -518,7 +527,7 @@ def productDescriptionAssistant(product_sku, event_name, customer_segmentation, 
         logger.error(user_friendly_error)
         return "None", "0", "0", "0.0"
 
-
+@track_observability
 def perform_semantic_search(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> \
 list[dict[str, Any]]:
     """
@@ -543,7 +552,7 @@ list[dict[str, Any]]:
         logger.error(user_friendly_error)
         return []
 
-
+@track_observability
 def perform_rag_with_sources(question, s3_path, aws_access_key_id=None, aws_secret_access_key=None, region_name=None) -> \
 Tuple[str, dict[str, list[str]]]:
     """
@@ -581,6 +590,7 @@ class Chatbot:
         self.system_prompt = system_prompt
         self.instance = get_instance_chatbot(self.aws_access_key_id, self.aws_secret_access_key, self.region_name)
 
+    @track_observability
     def chat(self, user_input, system_prompt=None, model_name=None):
         try:
             if system_prompt and (self.system_prompt is None or self.system_prompt != system_prompt):
@@ -592,6 +602,7 @@ class Chatbot:
             logger.error(user_friendly_error)
             return f"An error occurred: {user_friendly_error}", []
 
+    @track_observability
     def get_history(self):
         try:
             history = self.instance.get_conversation_history()
@@ -601,6 +612,7 @@ class Chatbot:
             logger.error(user_friendly_error)
             return f"An error occurred: {user_friendly_error}"
 
+    @track_observability
     def clear_history(self):
         try:
             self.instance.clear_conversation_history()
@@ -610,6 +622,7 @@ class Chatbot:
             logger.error(user_friendly_error)
             return f"An error occurred: {user_friendly_error}"
 
+    @track_observability
     def create_url(self):
         with gr.Blocks() as demo:
             with gr.Row():
