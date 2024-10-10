@@ -13,7 +13,8 @@ from .icd_code_generator import ICDCodeGenerator
 from .create_ui_wrapper_from_gradio import FunctionWrapper
 from .chatbot import BedrockChatbot
 from .Observability import observability, track_observability
-
+from .imageSimilarity import BedrockImageSimilarity
+import mimetypes
 import os
 import json
 from loguru import logger
@@ -30,6 +31,15 @@ def get_instance(aws_access_key_id=None, aws_secret_access_key=None, region_name
     _instance = BedrockSummarizer(aws_access_key_id=aws_access_key_id,
                                   aws_secret_access_key=aws_secret_access_key,
                                   region_name=region_name)
+    return _instance
+
+
+def get_instance_image_similarity(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+    # global _instance
+    # if _instance is None:
+    _instance = BedrockImageSimilarity(aws_access_key_id=aws_access_key_id,
+                                       aws_secret_access_key=aws_secret_access_key,
+                                       region_name=region_name)
     return _instance
 
 
@@ -674,6 +684,88 @@ class Chatbot:
         demo.launch(share=True)
 
 
+@track_observability
+def imageSimilarity(image, other, k=10, embedding_length=256, model_name=None, aws_access_key_id=None,
+                    aws_secret_access_key=None, region_name=None):
+    """
+    Compares a given image to another image or set of images and returns the similarity score.
+
+    Parameters:
+    image (str or PIL.Image): The input image for comparison. Can be:
+                                     - Local file path
+                                     - S3 path to a file
+                                     - PIL Image
+    other (str, list, or PIL.Image): The second image(s) or directory to compare the input image against. Can be:
+                                     - Local file path
+                                     - Directory path
+                                     - S3 path (file or folder)
+                                     - PIL Image or list of PIL Images
+    k: Top k results to return with the greatest similarity (default 10).
+    embedding_length (int, optional): The length of the output embedding. Default is 256.
+    model_name (str, optional): The name of the model to use for similarity comparison.
+    aws_access_key_id (str, optional): AWS Access Key ID for authentication.
+    aws_secret_access_key (str, optional): AWS Secret Access Key for authentication.
+    region_name (str, optional): AWS region for service access.
+
+    Returns:
+    tuple: A tuple containing the similarity score for a single image and the associated cost, or a dictionary where the file names are the keys and their corresponding
+    similarity scores are the values, along with the associated cost. In the event of a failure, returns (None, 0.0).
+    """
+    instance = get_instance_image_similarity(aws_access_key_id, aws_secret_access_key, region_name)
+    try:
+        if isinstance(other, str):
+            if os.path.isfile(other) or (other.startswith("s3://") and mimetypes.guess_type(other)[0] is not None):
+                # Case where 'other' is a file (local or S3)
+                return instance.image_to_image_similarity(
+                    image=image,
+                    other_image=other,
+                    output_embedding_length=embedding_length,
+                    model_name=model_name
+                )
+            elif os.path.isdir(other):
+                # Case where 'other' is a folder (local or S3)
+                return instance.image_to_folder_similarity(
+                    image=image,
+                    folder_path=other,
+                    k=k,
+                    output_embedding_length=embedding_length,
+                    model_name=model_name
+                )
+            elif (other.startswith("s3://") and (other.endswith("/") or mimetypes.guess_type(other)[0] is None)):
+                return instance.image_to_s3_folder_similarity(
+                    image=image,
+                    s3_folder_path=other,
+                    k=k,
+                    output_embedding_length=embedding_length,
+                    model_name=model_name
+                )
+            else:
+                raise ValueError("other is of an unrecognized type.")
+        elif isinstance(other, Image.Image):
+            # Case where 'other' is a single PIL Image
+            return instance.image_to_image_similarity(
+                image=image,
+                other_image=other,
+                output_embedding_length=embedding_length,
+                model_name=model_name
+            )
+        elif isinstance(other, list) and all(isinstance(img, Image.Image) for img in other):
+            # Case where 'other' is a list of PIL Images
+            return instance.image_to_pil_list_similarity(
+                image=image,
+                pil_image_list=other,
+                k=k,
+                output_embedding_length=embedding_length,
+                model_name=model_name
+            )
+        else:
+            raise ValueError("other is of an unrecognized type.")
+    except Exception as e:
+        user_friendly_error = instance._get_user_friendly_error(e)
+        logger.error(user_friendly_error)
+        return None, 0.0
+
+
 # FunctionWrapper for creating gradio url
 class AvahiPlatform:
     def __init__(self):
@@ -692,3 +784,4 @@ class AvahiPlatform:
         self.perform_rag_with_sources = FunctionWrapper(perform_rag_with_sources)
         self.chatbot = Chatbot
         self.initialize_observability = initialize_observability
+        self.imageSimilarity = imageSimilarity
