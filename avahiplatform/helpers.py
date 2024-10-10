@@ -2,6 +2,8 @@ import boto3
 import time
 import json
 from loguru import logger
+import pymupdf  
+import docx
 import botocore.exceptions
 
 class Helpers:
@@ -12,26 +14,6 @@ class Helpers:
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
         self.bedrock = self._get_bedrock_client()
-
-    def _get_bedrock_client(self):
-        try:
-            if self.aws_access_key_id and self.aws_secret_access_key:
-                logger.info("Using provided AWS credentials for authentication.")
-                session = boto3.Session(
-                    aws_access_key_id=self.aws_access_key_id,
-                    aws_secret_access_key=self.aws_secret_access_key,
-                    region_name=self.region_name
-                )
-                return session.client(service_name="bedrock-runtime")
-            else:
-                logger.info("No explicit credentials provided. Attempting to use default credentials.")
-                return boto3.client(service_name="bedrock-runtime", region_name=self.region_name)
-        except botocore.exceptions.NoCredentialsError:
-            logger.error("No AWS credentials found. Please provide credentials or configure your environment.")
-            raise ValueError("AWS credentials are required. Please provide aws_access_key_id and aws_secret_access_key or configure your environment with AWS credentials.")
-        except Exception as e:
-            logger.error(f"Error setting up Bedrock client: {str(e)}")
-            raise
 
     def model_invoke(self, prompt, model_name=None, max_retries=15, initial_delay=2):
         if model_name is None:
@@ -96,6 +78,47 @@ class Helpers:
             return "An error occurred with the AWS service. Please check your AWS resources and permissions."
         else:
             return f"An unexpected error occurred: {str(error)}."
+        
+    def read_pdf(self, file_obj):
+        logger.info(f"Reading PDF content from in-memory file object")
+        doc = pymupdf.open(file_obj)
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        return text
+
+    def read_pdf_from_stream(self, file_obj):
+        logger.info(f"Reading PDF content from in-memory file object")
+        doc = pymupdf.open(stream=file_obj, filetype="pdf")
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        return text
+
+    def read_docx(self, file_obj):
+        logger.info(f"Reading DOCX content from in-memory file object")
+        doc = docx.Document(file_obj)
+        return "\n".join([paragraph.text for paragraph in doc.paragraphs])
+    
+    def _get_bedrock_client(self):
+        try:
+            if self.aws_access_key_id and self.aws_secret_access_key:
+                logger.info("Using provided AWS credentials for authentication.")
+                session = boto3.Session(
+                    aws_access_key_id=self.aws_access_key_id,
+                    aws_secret_access_key=self.aws_secret_access_key,
+                    region_name=self.region_name
+                )
+                return session.client(service_name="bedrock-runtime")
+            else:
+                logger.info("No explicit credentials provided. Attempting to use default credentials.")
+                return boto3.client(service_name="bedrock-runtime", region_name=self.region_name)
+        except botocore.exceptions.NoCredentialsError:
+            logger.error("No AWS credentials found. Please provide credentials or configure your environment.")
+            raise ValueError("AWS credentials are required. Please provide aws_access_key_id and aws_secret_access_key or configure your environment with AWS credentials.")
+        except Exception as e:
+            logger.error(f"Error setting up Bedrock client: {str(e)}")
+            raise
 
     def _get_model_details(self, model_name):
         if model_name.lower() == "sonnet-3.5":
