@@ -3,16 +3,17 @@ import time
 from loguru import logger
 import botocore.exceptions
 import pandas as pd
-import io
 import os
 import json
-import sys
+import io
 import contextlib
+import ast
 
 
 class PythonASTREPL:
     def __init__(self, dataframes=None, locals=None, globals=None):
-        """Initialize the REPL with optional local and global namespaces and dataframes.
+        """
+        Initialize the REPL with optional local and global namespaces and dataframes.
 
         Args:
             dataframes (dict, optional): A dictionary of DataFrames.
@@ -33,34 +34,49 @@ class PythonASTREPL:
         Returns:
             str: The result of the code execution or an error message.
         """
+
         buffer = io.StringIO()
+        assigned_vars = []
+
+        # Parse the code to identify assigned variables
+        try:
+            parsed_code = ast.parse(code)
+            for node in ast.walk(parsed_code):
+                if isinstance(node, ast.Assign):
+                    # For targets in the assignment, get their ids (variable names)
+                    for target in node.targets:
+                        if isinstance(target, ast.Name):
+                            assigned_vars.append(target.id)
+        except Exception as e:
+            return f"Error parsing code: {e}"
+
         try:
             with contextlib.redirect_stdout(buffer):
                 try:
                     # Attempt to compile the code as an expression
                     compiled_code = compile(code, '<string>', 'eval')
                     result = eval(compiled_code, self.globals, self.locals)
+                    print(repr(result))
                 except SyntaxError:
                     # If it isn't an expression, compile it as a statement
                     compiled_code = compile(code, '<string>', 'exec')
                     exec(compiled_code, self.globals, self.locals)
                     result = None
+                    # If no output and variables were assigned, print their values
+                    if not buffer.getvalue().strip() and assigned_vars:
+                        for var in assigned_vars:
+                            value = self.locals.get(var, 'Undefined')
+                            print(f"{var} = {repr(value)}")
+                    elif not buffer.getvalue().strip():
+                        # If no output and no assigned vars, print 'None'
+                        print('None')
         except Exception as e:
             # Capture any exceptions raised during execution
             return f"Error: {e}"
-
         # Retrieve the captured output from stdout
         output = buffer.getvalue().strip()
+        return output
 
-        # Determine what to return based on captured output and result
-        if output and result is not None:
-            return f"{output}\n{repr(result)}"
-        elif output:
-            return output
-        elif result is not None:
-            return repr(result)
-        else:
-            return "Executed Successfully"
 
 
 class QueryCSV:
@@ -119,6 +135,9 @@ class QueryCSV:
         system_message = """
         You are an senior python developer tasked with analyzing data in a pandas DataFrame and generate a correct python code for that. 
         - Your goal is to generate python code to get the answer questions about the data accurately. 
+        - Strictly If you use any library then please use `pip install` first to install it and then use that library.
+        - Strictly this type of error should not come: ` No module named 'seaborn'`
+        - Strictly remember that syntax should be always correct of your code
         - Just give output in python code only, Make sure, you don't write anything else than python code.
         - df will be given so please dont write `df = pd.read_csv('your_data.csv')`
         - Dont use print statement to return the output in the console, unless or until you want to convey some message.
@@ -173,6 +192,8 @@ class QueryCSV:
         system_message = """
             - You are given an <Answer> and a user <Query>. Answer the query by using the <Answer>, assuming that in the provided <Answer> are the answers to the <Query>.
             - Do not include any of the reasoning
+            - Strictly always include the input Answer in your final output and beautify that Answer to be a human readable output.
+            - Strictly don't write: "Based on the provided answer"; as it should be a human-like response
         """
 
         user_message = f"""
