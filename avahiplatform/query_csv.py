@@ -134,9 +134,8 @@ class QueryCSV:
     def _execute_query(self, query, dataframes, model_id, user_prompt):
         system_message = """
         You are an senior python developer tasked with analyzing data in a pandas DataFrame and generate a correct python code for that. 
+        - Analyze the first 5 rows of the given input df and then write the code.
         - Your goal is to generate python code to get the answer questions about the data accurately. 
-        - Strictly If you use any library then please use `pip install` first to install it and then use that library.
-        - Strictly this type of error should not come: ` No module named 'seaborn'`
         - Strictly remember that syntax should be always correct of your code
         - Just give output in python code only, Make sure, you don't write anything else than python code.
         - df will be given so please dont write `df = pd.read_csv('your_data.csv')`
@@ -145,6 +144,9 @@ class QueryCSV:
         - Keep it simple.
         - Strictly always gives correct python code, syntax should be always correct, please verify and then only give answer.
         - If you're unsure about something, say so and explain why.
+        - import seaborn like: import seaborn as sns; if needed then only
+        - For comparison purposes, always use values such as int, float or string. Never use pandas objects.
+        - Unless prompted to do so, never use plots.
         """
 
         df_info = {name: df.info(verbose=False, show_counts=False) for name, df in dataframes.items()}
@@ -194,6 +196,7 @@ class QueryCSV:
             - Do not include any of the reasoning
             - Strictly always include the input Answer in your final output and beautify that Answer to be a human readable output.
             - Strictly don't write: "Based on the provided answer"; as it should be a human-like response
+            - If there is more than one <Answer>, use bullet points to show your results
         """
 
         user_message = f"""
