@@ -39,6 +39,7 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 - Grammar correction ✍️
 - Product description generation 🛍️
 - Image generation 🎨
+- Image similarity 🔍🖼️
 - Medical scribing 👩‍⚕️
 - ICD-10 code generation 🏥
 - CSV querying 📊
@@ -90,6 +91,12 @@ print("Product Description:", description)
 # Image Generation - Image generation 🎨
 image, seed, cost = avahiplatform.imageGeneration("A beautiful sunset over mountains")
 print("Generated Image:", image)
+
+# Image similarity 🔍🖼️ 
+# It supports pil image, local path, s3 path in 1st argument
+# It supports pil image, local path, s3 path, folder_path, list of pil images in second argument
+similarity_score, cost = avahiplatform.imageSimilarity("ford_endeavour.jpeg", "ford_interior.jpeg")
+print("similarity_score:", similarity_score)
 
 # Medical Scribing - Medical scribing 👩‍⚕️
 medical_summary, _ = avahiplatform.medicalscribing("path/to/audio.mp3", "input-bucket", "iam-arn")
