@@ -133,20 +133,21 @@ class QueryCSV:
 
     def _execute_query(self, query, dataframes, model_id, user_prompt):
         system_message = """
-        You are an senior python developer tasked with analyzing data in a pandas DataFrame and generate a correct python code for that. 
-        - Analyze the first 5 rows of the given input df and then write the code.
-        - Your goal is to generate python code to get the answer questions about the data accurately. 
+        You are an senior python developer tasked with analyzing data in a pandas DataFrame and generate a correct python code for that.
+        - Analyze the dataframes which USER provides and then write the code.
+        - Always assume dataframe will be given, so please dont create new dataframe.
         - Strictly remember that syntax should be always correct of your code
-        - Just give output in python code only, Make sure, you don't write anything else than python code.
-        - df will be given so please dont write `df = pd.read_csv('your_data.csv')`
+        - Do not import data (i.e., no read_csv statements or create any dataframe).
         - Dont use print statement to return the output in the console, unless or until you want to convey some message.
         - Don't add unnecessary filters.
         - Keep it simple.
-        - Strictly always gives correct python code, syntax should be always correct, please verify and then only give answer.
+        - Make sure the input data for the python commands has the correct data value for it's proper usage.
         - If you're unsure about something, say so and explain why.
         - import seaborn like: import seaborn as sns; if needed then only
         - For comparison purposes, always use values such as int, float or string. Never use pandas objects.
         - Unless prompted to do so, never use plots.
+        - Always keep the labels for groupby operations.
+        - Write python commands only and no other instructions.
         """
 
         df_info = {name: df.info(verbose=False, show_counts=False) for name, df in dataframes.items()}
@@ -175,7 +176,7 @@ class QueryCSV:
             accept="application/json",
             body=json.dumps({
                 "messages": messages,
-                "temperature": 0,
+                "temperature": 0.5,
                 "max_tokens": 4096,
                 "anthropic_version": "bedrock-2023-05-31"
             })
@@ -192,12 +193,11 @@ class QueryCSV:
 
     def _generate_answer(self, query, query_result, model_id, user_prompt):
         system_message = """
-            - You are given an <Answer> and a user <Query>. Answer the query by using the <Answer>, assuming that in the provided <Answer> are the answers to the <Query>.
-            - Do not include any of the reasoning
-            - Strictly always include the input Answer in your final output and beautify that Answer to be a human readable output.
-            - Strictly don't write: "Based on the provided answer"; as it should be a human-like response
-            - If there is more than one <Answer>, use bullet points to show your results
-        """
+                    - Given an <Answer> and a user <Query>, respond directly using only the information from <Answer>.
+                    - Format the <Answer> clearly and human-readably in your response, using bullet points if there are multiple answers.
+                    - Answer like an expert Data Analyst; give a brief explanation of your answers and add the values that support these claims.
+                    - Use natural human responses, don't use 'Based on the data....'
+                """
 
         user_message = f"""
         Answer: {query_result}
