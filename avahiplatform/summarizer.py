@@ -1,5 +1,5 @@
 import os
-from helpers import utils
+from helpers.utils import Utils
 from loguru import logger
 from helpers.bedrock_helper import BedrockHelper
 
@@ -27,9 +27,9 @@ class BedrockSummarizer:
         _, file_extension = os.path.splitext(file_path)
         logger.info(f"Processing file: {file_path}")
         if file_extension.lower() == '.pdf':
-            text = utils.read_pdf(file_path)
+            text = Utils.read_pdf(file_path)
         elif file_extension.lower() == '.docx':
-            text = utils.read_docx(file_path)
+            text = Utils.read_docx(file_path)
         else:
             with open(file_path, 'r', encoding="utf-8") as file:  # Explicitly setting encoding
                 text = file.read()
@@ -37,6 +37,6 @@ class BedrockSummarizer:
         return self.summarize_text(text, user_prompt, model_name)
 
     def summarize_s3_file(self, s3_file_path, user_prompt=None, model_name=None):
-        text = utils.read_s3_file(s3_file_path=s3_file_path)
+        text = Utils.read_s3_file(s3_file_path=s3_file_path)
 
         return self.summarize_text(text, user_prompt, model_name)

@@ -1,6 +1,6 @@
 import time
 import json
-from .utils import Utils
+from helpers.utils import Utils
 from loguru import logger
 
 
@@ -31,7 +31,7 @@ class BedrockHelper:
         while retries < max_retries:
             try:
                 logger.info("Invoking model to summarize content.")
-                response = self.bedrock.invoke_model(
+                response = self._bedrock_client.invoke_model(
                     body=body,
                     modelId=model_id,
                     accept=accept,
@@ -53,7 +53,7 @@ class BedrockHelper:
                             total_cost:.6f}")
                 return result, input_token_cost, output_token_cost, total_cost
 
-            except self.bedrock.exceptions.ThrottlingException as e:
+            except self._bedrock_client.exceptions.ThrottlingException as e:
                 retries += 1
                 wait_time = initial_delay * \
                     (2 ** (retries - 1))  # Exponential backoff
