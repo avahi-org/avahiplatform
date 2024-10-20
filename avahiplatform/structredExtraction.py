@@ -1,14 +1,14 @@
 import os
 from loguru import logger
-from .helpers import Helpers
+from avahi.avahiplatform.avahiplatform.helpers.s3_helper import S3Helper
+from helpers.utils import Utils
+from helpers.bedrock_helper import BedrockHelper
+
 
 class BedrockstructredExtraction:
-    def __init__(self, default_model_name='sonnet-3', aws_access_key_id=None,
-                 aws_secret_access_key=None, region_name=None):
-        self.helpers = Helpers(default_model_name=default_model_name,
-                              aws_access_key_id=aws_access_key_id,
-                              aws_secret_access_key=aws_secret_access_key,
-                              region_name=region_name)
+    def __init__(self, bedrock_helper: BedrockHelper, s3_helper: S3Helper):
+        self.bedrock_helper = bedrock_helper
+        self.s3_helper = s3_helper
 
     def extract_text(self, text, user_prompt=None, model_name=None):
         if not text:
@@ -35,19 +35,21 @@ response should be json in below format
 }
 
 Make sure output has only json output. No other extra words"""
-        return self.helpers.model_invoke(prompt, model_name)
+        return self.bedrock_helper.model_invoke(prompt, model_name)
 
     def extract_file(self, file_path, user_prompt=None, model_name=None):
         if not os.path.exists(file_path):
-            logger.error(f"The file at {file_path} does not exist. Please check the file path.")
-            raise ValueError(f"The file at {file_path} does not exist. Please check the file path.")
+            logger.error(f"The file at {
+                         file_path} does not exist. Please check the file path.")
+            raise ValueError(
+                f"The file at {file_path} does not exist. Please check the file path.")
 
         _, file_extension = os.path.splitext(file_path)
         logger.info(f"Processing file: {file_path}")
         if file_extension.lower() == '.pdf':
-            text = self.helpers.read_pdf(file_path)
+            text = Utils.read_pdf(file_path)
         elif file_extension.lower() == '.docx':
-            text = self.helpers.read_docx(file_path)
+            text = Utils.read_docx(file_path)
         else:
             with open(file_path, 'r', encoding="utf-8") as file:  # Explicitly setting encoding
                 text = file.read()
@@ -55,5 +57,5 @@ Make sure output has only json output. No other extra words"""
         return self.extract_text(text, user_prompt, model_name)
 
     def extract_s3_file(self, s3_file_path, user_prompt=None, model_name=None):
-        text = self.helpers.read_s3_file(s3_file_path=s3_file_path)
+        text = self.s3_helper.read_s3_file(s3_file_path=s3_file_path)
         return self.extract_text(text, user_prompt, model_name)
