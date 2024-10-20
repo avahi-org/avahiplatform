@@ -7,8 +7,8 @@ import botocore.exceptions
 
 class BotoHelper:
 
-    _bedrock_helper: BedrockHelper = None
-    _s3_helper: S3Helper = None
+    bedrock_helper: BedrockHelper = None
+    s3_helper: S3Helper = None
 
     def __init__(self, aws_access_key_id=None,
                  aws_secret_access_key=None, region_name=None):
@@ -30,15 +30,15 @@ class BotoHelper:
 
     def get_or_create_bedrock_helper(self) -> BedrockHelper:
         """ Get helper for the Bedrock service. """
-        if self._bedrock_helper is None:
+        if self.bedrock_helper is None:
             bedrock_client = self._create_client(
                 service_name="bedrock-runtime")
-            self._bedrock_helper = BedrockHelper(bedrock_client=bedrock_client)
-        return self._bedrock_helper
+            self.bedrock_helper = BedrockHelper(bedrock_client=bedrock_client)
+        return self.bedrock_helper
 
     def get_or_create_s3_helper(self) -> S3Helper:
         """ Get helper for the S3 service. """
-        if self._s3_helper is None:
+        if self.s3_helper is None:
             s3_client = self._create_client(service_name="s3")
-            self._s3_helper = S3Helper(s3_client=s3_client)
-        return self._s3_helper
+            self.s3_helper = S3Helper(s3_client=s3_client)
+        return self.s3_helper

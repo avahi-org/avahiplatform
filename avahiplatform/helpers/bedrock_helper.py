@@ -6,7 +6,7 @@ from loguru import logger
 
 class BedrockHelper:
     def __init__(self, bedrock_client):
-        self._bedrock_client = bedrock_client
+        self.bedrock_client = bedrock_client
 
     def model_invoke(self, prompt, model_name=None, max_retries=15, initial_delay=2):
         if model_name is None:
@@ -31,7 +31,7 @@ class BedrockHelper:
         while retries < max_retries:
             try:
                 logger.info("Invoking model to summarize content.")
-                response = self._bedrock_client.invoke_model(
+                response = self.bedrock_client.invoke_model(
                     body=body,
                     modelId=model_id,
                     accept=accept,
@@ -53,7 +53,7 @@ class BedrockHelper:
                             total_cost:.6f}")
                 return result, input_token_cost, output_token_cost, total_cost
 
-            except self._bedrock_client.exceptions.ThrottlingException as e:
+            except self.bedrock_client.exceptions.ThrottlingException as e:
                 retries += 1
                 wait_time = initial_delay * \
                     (2 ** (retries - 1))  # Exponential backoff

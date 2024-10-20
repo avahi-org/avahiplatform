@@ -1,6 +1,6 @@
 import os
-from helpers.utils import Utils
 from loguru import logger
+from helpers.utils import Utils
 from helpers.bedrock_helper import BedrockHelper
 
 

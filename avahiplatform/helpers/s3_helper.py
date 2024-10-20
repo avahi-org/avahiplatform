@@ -5,7 +5,7 @@ from .utils import Utils
 
 class S3Helper:
     def __init__(self, s3_client):
-        self._s3_client = s3_client
+        self.s3_client = s3_client
 
     def read_s3_file(self, s3_file_path):
         bucket_name, key_name = self._parse_s3_path(s3_file_path)
