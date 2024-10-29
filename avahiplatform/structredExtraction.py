@@ -1,8 +1,8 @@
 import os
 from loguru import logger
-from avahi.avahiplatform.avahiplatform.helpers.s3_helper import S3Helper
-from helpers.utils import Utils
-from helpers.bedrock_helper import BedrockHelper
+from avahiplatform.helpers.s3_helper import S3Helper
+from avahiplatform.helpers.utils import Utils
+from avahiplatform.helpers.bedrock_helper import BedrockHelper
 
 
 class BedrockstructredExtraction:
@@ -39,8 +39,7 @@ Make sure output has only json output. No other extra words"""
 
     def extract_file(self, file_path, user_prompt=None, model_name=None):
         if not os.path.exists(file_path):
-            logger.error(f"The file at {
-                         file_path} does not exist. Please check the file path.")
+            logger.error(f"The file at {file_path} does not exist. Please check the file path.")
             raise ValueError(
                 f"The file at {file_path} does not exist. Please check the file path.")
 

@@ -1,6 +1,6 @@
 import time
 import json
-from helpers.utils import Utils
+from .utils import Utils
 from loguru import logger
 
 
@@ -49,16 +49,14 @@ class BedrockHelper:
 
                 result = json.loads(response.get('body').read())[
                     'content'][0]['text']
-                logger.info(f"Model invocation successful. Total cost: ${
-                            total_cost:.6f}")
+                logger.info(f"Model invocation successful. Total cost: ${total_cost:.6f}")
                 return result, input_token_cost, output_token_cost, total_cost
 
             except self.bedrock_client.exceptions.ThrottlingException as e:
                 retries += 1
                 wait_time = initial_delay * \
                     (2 ** (retries - 1))  # Exponential backoff
-                logger.warning(f"Service is being throttled. Retrying in {
-                               wait_time} seconds...")
+                logger.warning(f"Service is being throttled. Retrying in {wait_time} seconds...")
                 time.sleep(wait_time)
             except Exception as e:
                 user_friendly_error = Utils.get_user_friendly_error(e)

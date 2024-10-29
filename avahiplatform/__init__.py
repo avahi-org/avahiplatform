@@ -21,3 +21,4 @@ icdcoding = avahi_platform.icdcoding
 chatbot = avahi_platform.chatbot
 initialize_observability = avahi_platform.initialize_observability
 imageSimilarity = avahi_platform.imageSimilarity
+create_helpers = avahi_platform.create_helpers

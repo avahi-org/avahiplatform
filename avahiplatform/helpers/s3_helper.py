@@ -17,17 +17,15 @@ class S3Helper:
             body = response['Body'].read()
 
             if 'application/pdf' in content_type:
-                text = self.read_pdf_from_stream(BytesIO(body))
+                text = Utils.read_pdf_from_stream(BytesIO(body))
             elif 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' in content_type:
-                text = self.read_docx(BytesIO(body))
+                text = Utils.read_docx(BytesIO(body))
             else:
                 text = body.decode('utf-8')
 
         except self.s3_client.exceptions.NoSuchKey:
-            logger.error(f"The file {
-                         s3_file_path} does not exist in the S3 bucket. Please check the S3 file path.")
-            raise ValueError(f"The file {
-                             s3_file_path} does not exist in the S3 bucket. Please check the S3 file path.")
+            logger.error(f"The file {s3_file_path} does not exist in the S3 bucket. Please check the S3 file path.")
+            raise ValueError(f"The file {s3_file_path} does not exist in the S3 bucket. Please check the S3 file path.")
         except self.s3_client.exceptions.NoSuchBucket:
             logger.error(
                 f"The S3 bucket does not exist. Please check the bucket name in the S3 file path.")
@@ -40,7 +38,7 @@ class S3Helper:
 
         return text
 
-    def parse_s3_path(self, s3_file_path):
+    def _parse_s3_path(self, s3_file_path):
         if not s3_file_path.startswith('s3://'):
             logger.error(
                 "S3 path should start with 's3://'. Please check the S3 file path.")

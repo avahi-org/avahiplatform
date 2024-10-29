@@ -1,11 +1,7 @@
 import avahiplatform
+bedrock_helpers, s3_helpers = avahiplatform.create_helpers()
 
-avahiplatform.initialize_observability(metrics_file='./metrics.jsonl', start_prometheus=True)
-# avahiplatform.summarize.create_url()
-#
-chatbot = avahiplatform.chatbot()
-chatbot.create_url()
-#
-#
-# # Generate URL for csv_query
-# avahiplatform.query_csv.create_url()
+# answer = avahiplatform.summarize("./summarize.docx", bedrock_helpers, s3_helpers)
+# print(answer[0])
+answer = avahiplatform.structredExtraction("./summarize.docx", bedrock_helpers, s3_helpers)
+print(answer[0])

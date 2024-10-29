@@ -20,10 +20,8 @@ class BotoHelper:
         try:
             return self._session.client(service_name=service_name)
         except botocore.exceptions.NoCredentialsError:
-            logger.error(f"No AWS credentials found for {
-                         service_name}. Please provide credentials or configure your environment.")
-            raise ValueError(f"AWS credentials are required for {
-                             service_name}. Provide aws_access_key_id and aws_secret_access_key or configure your environment.")
+            logger.error(f"No AWS credentials found for {service_name}. Please provide credentials or configure your environment.")
+            raise ValueError(f"AWS credentials are required for {service_name}. Provide aws_access_key_id and aws_secret_access_key or configure your environment.")
         except Exception as e:
             logger.error(f"Error setting up {service_name} client: {str(e)}")
             raise

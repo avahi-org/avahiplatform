@@ -14,6 +14,8 @@ from .create_ui_wrapper_from_gradio import FunctionWrapper
 from .chatbot import BedrockChatbot
 from .Observability import observability, track_observability
 from .imageSimilarity import BedrockImageSimilarity
+from avahiplatform.helpers.boto_helper import BotoHelper
+from avahiplatform.helpers.utils import Utils
 import mimetypes
 import os
 import json
@@ -25,13 +27,19 @@ import gradio as gr
 _instance = None
 
 
-def get_instance(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
-    # global _instance
-    # if _instance is None:
-    _instance = BedrockSummarizer(aws_access_key_id=aws_access_key_id,
-                                  aws_secret_access_key=aws_secret_access_key,
-                                  region_name=region_name)
-    return _instance
+def create_helpers(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+    boto_helper = BotoHelper(aws_access_key_id, aws_secret_access_key, region_name)
+    bedrock_helper = boto_helper.get_or_create_bedrock_helper()
+    s3_helper = boto_helper.get_or_create_s3_helper()
+    return bedrock_helper, s3_helper
+
+
+# def get_instance(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+# def get_instance(bedrock_helper, s3_helper):
+#     # global _instance
+#     # if _instance is None:
+#     _instance = BedrockSummarizer(bedrock_helper, s3_helper)
+#     return _instance
 
 
 def get_instance_image_similarity(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
@@ -56,13 +64,13 @@ def initialize_observability(metrics_file='metrics.jsonl', start_prometheus=Fals
                              prometheus_port=prometheus_port)
 
 
-def get_instance_extraction(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
-    # global _instance
-    # if _instance is None:
-    _instance = BedrockstructredExtraction(aws_access_key_id=aws_access_key_id,
-                                           aws_secret_access_key=aws_secret_access_key,
-                                           region_name=region_name)
-    return _instance
+# def get_instance_extraction(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
+#     # global _instance
+#     # if _instance is None:
+#     _instance = BedrockstructredExtraction(aws_access_key_id=aws_access_key_id,
+#                                            aws_secret_access_key=aws_secret_access_key,
+#                                            region_name=region_name)
+#     return _instance
 
 
 def get_instance_Data_mask(aws_access_key_id=None, aws_secret_access_key=None, region_name=None):
@@ -348,8 +356,7 @@ def nl2sql(nl_query, db_type, username, password, host,
         return "None"
 
 @track_observability
-def summarize(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
-              aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
+def summarize(input_content, bedrock_helper, s3_helper, user_prompt=None, model_name=None) -> Tuple[str, BotoHelper.bedrock_helper, BotoHelper.s3_helper, str]:
     """
     Summarizes the given input content. The input can be text, a local file path, or an S3 file path.
 
@@ -364,7 +371,7 @@ def summarize(input_content, user_prompt=None, model_name=None, aws_access_key_i
     Returns:
     tuple: A tuple containing the summary text, input token count, output token count, and the cost of the operation.
     """
-    instance = get_instance(aws_access_key_id, aws_secret_access_key, region_name)
+    instance = BedrockSummarizer(bedrock_helper, s3_helper)
     try:
         if os.path.exists(input_content):  # Check if input is a local file path
             return instance.summarize_file(input_content, user_prompt, model_name)
@@ -373,13 +380,12 @@ def summarize(input_content, user_prompt=None, model_name=None, aws_access_key_i
         else:  # Assume input is text
             return instance.summarize_text(input_content, user_prompt, model_name)
     except Exception as e:
-        user_friendly_error = instance._get_user_friendly_error(e)
+        user_friendly_error = Utils.get_user_friendly_error(e)
         logger.error(user_friendly_error)
         return "None", "0", "0", "0.0"
 
 @track_observability
-def structredExtraction(input_content, user_prompt=None, model_name=None, aws_access_key_id=None,
-                        aws_secret_access_key=None, region_name=None) -> Tuple[str, str, str, str]:
+def structredExtraction(input_content, bedrock_helper, s3_helper, user_prompt=None, model_name=None) -> Tuple[str, BotoHelper.bedrock_helper, BotoHelper.s3_helper, str]:
     """
     Extract the given input content. The input can be text, a local file path, or an S3 file path.
 
@@ -394,7 +400,7 @@ def structredExtraction(input_content, user_prompt=None, model_name=None, aws_ac
     Returns:
     tuple: A tuple containing the Extracted entity, input token count, output token count, and the cost of the operation.
     """
-    instance = get_instance_extraction(aws_access_key_id, aws_secret_access_key, region_name)
+    instance = BedrockstructredExtraction(bedrock_helper, s3_helper)
     try:
         if os.path.exists(input_content):  # Check if input is a local file path
             return instance.extract_file(input_content, user_prompt, model_name)
@@ -403,7 +409,7 @@ def structredExtraction(input_content, user_prompt=None, model_name=None, aws_ac
         else:  # Assume input is text
             return instance.extract_text(input_content, user_prompt, model_name)
     except Exception as e:
-        user_friendly_error = instance._get_user_friendly_error(e)
+        user_friendly_error = Utils.get_user_friendly_error(e)
         logger.error(user_friendly_error)
         return "None", "0", "0", "0.0"
 
@@ -769,6 +775,7 @@ def imageSimilarity(image, other, k=10, embedding_length=256, model_name=None, a
 # FunctionWrapper for creating gradio url
 class AvahiPlatform:
     def __init__(self):
+        self.create_helpers = create_helpers
         self.summarize = FunctionWrapper(summarize)
         self.medicalscribing = FunctionWrapper(medicalscribing)
         self.icdcoding = FunctionWrapper(icdcoding)

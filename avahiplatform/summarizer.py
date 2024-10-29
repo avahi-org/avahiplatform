@@ -1,26 +1,26 @@
 import os
 from loguru import logger
-from helpers.utils import Utils
-from helpers.bedrock_helper import BedrockHelper
+from avahiplatform.helpers.utils import Utils
+from avahiplatform.helpers.s3_helper import S3Helper
+from avahiplatform.helpers.bedrock_helper import BedrockHelper
 
 
 class BedrockSummarizer:
-    def __init__(self, bedrock_helper: BedrockHelper):
+    def __init__(self, bedrock_helper: BedrockHelper, s3_helper: S3Helper):
         self.bedrock_helper = bedrock_helper
+        self.s3_helper = s3_helper
 
     def summarize_text(self, text, user_prompt=None, model_name=None):
         if not text:
             logger.error("Input text cannot be empty.")
             raise ValueError("Input text cannot be empty.")
 
-        prompt = user_prompt if user_prompt else f"Please summarize the following text: {
-            text}"
+        prompt = user_prompt if user_prompt else f"Please summarize the following text: {text}"
         return self.bedrock_helper.model_invoke(prompt, model_name)
 
     def summarize_file(self, file_path, user_prompt=None, model_name=None):
         if not os.path.exists(file_path):
-            logger.error(f"The file at {
-                         file_path} does not exist. Please check the file path.")
+            logger.error(f"The file at {file_path} does not exist. Please check the file path.")
             raise ValueError(
                 f"The file at {file_path} does not exist. Please check the file path.")
 
@@ -37,6 +37,6 @@ class BedrockSummarizer:
         return self.summarize_text(text, user_prompt, model_name)
 
     def summarize_s3_file(self, s3_file_path, user_prompt=None, model_name=None):
-        text = Utils.read_s3_file(s3_file_path=s3_file_path)
+        text = self.s3_helper.read_s3_file(s3_file_path=s3_file_path)
 
         return self.summarize_text(text, user_prompt, model_name)
