@@ -365,7 +365,7 @@ Contributors:
 - Abel : https://github.com/AbelCotonetoPadilla
 - Amol : https://github.com/Amoldwalunj-awahi
 - Diana : https://github.com/diana-avahitech
-- Jon : https://github.com/JonTurdiev
+- Jon Turdiev: https://github.com/JonTurdiev
 - Nashita : https://github.com/nashitak
 - Om : https://github.com/om-avahi
 - Sergio : https://github.com/SergioMartinezAvahitech
