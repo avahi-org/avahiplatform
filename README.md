@@ -349,21 +349,6 @@ We welcome contributions from the community! Whether you've found a bug or have 
 
 Let's make AvahiPlatform even better together!
 
-## Authors ✍️
-
-Lead by Dhruv Motwani : https://github.com/DhruvAvahi
-
-Contributors: 
-Abel : https://github.com/AbelCotonetoPadilla
-Amol : https://github.com/Amoldwalunj-awahi
-Diana : https://github.com/diana-avahitech
-Jon : https://github.com/JonTurdiev
-Nashita : https://github.com/nashitak
-Om : https://github.com/om-avahi
-Sergio : https://github.com/SergioMartinezAvahitech
-Vivek : https://github.com/vivekavahi
-
-
 ## Contact Us 📬
 
 We're here to help! If you have any questions, suggestions, or just want to say hi, feel free to reach out:
@@ -371,3 +356,18 @@ We're here to help! If you have any questions, suggestions, or just want to say 
 - Author: Avahi Tech
 - Email: info@avahitech.com
 - GitHub: [https://github.com/avahi-org/avahiplatform](https://github.com/avahi-org/avahiplatform)
+
+## Authors ✍️
+
+Lead by Dhruv Motwani : https://github.com/DhruvAvahi
+
+Contributors: 
+
+- Abel : https://github.com/AbelCotonetoPadilla
+- Amol : https://github.com/Amoldwalunj-awahi
+- Diana : https://github.com/diana-avahitech
+- Jon : https://github.com/JonTurdiev
+- Nashita : https://github.com/nashitak
+- Om : https://github.com/om-avahi
+- Sergio : https://github.com/SergioMartinezAvahitech
+- Vivek : https://github.com/vivekavahi
