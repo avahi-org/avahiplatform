@@ -335,6 +335,10 @@ pandas>=2.2.3
 
 You can install these dependencies using pip. We recommend using a virtual environment for your project.
 
+## License 📄
+
+This project is licensed under the MIT License. See the [Open-source MIT license](https://opensource.org/licenses/MIT) file for details.
+
 ## Contributing 🤝
 
 We welcome contributions from the community! Whether you've found a bug or have a feature in mind, we'd love to hear from you. Here's how you can contribute:
@@ -345,9 +349,17 @@ We welcome contributions from the community! Whether you've found a bug or have 
 
 Let's make AvahiPlatform even better together!
 
-## License 📄
-
-This project is licensed under the MIT License. See the [Open-source MIT license](https://opensource.org/licenses/MIT) file for details.
+## Authors ✍️
+Lead by Dhruv Motwani : https://github.com/DhruvAvahi
+Contributors: 
+Abel : https://github.com/AbelCotonetoPadilla
+Vivek : https://github.com/vivekavahi
+Om : https://github.com/om-avahi
+Amol : https://github.com/Amoldwalunj-awahi
+Jon : https://github.com/JonTurdiev
+Sergio : https://github.com/SergioMartinezAvahitech
+Nashita : https://github.com/nashitak
+Diana : https://github.com/diana-avahitech
 
 ## Contact Us 📬
 
