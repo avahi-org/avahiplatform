@@ -345,6 +345,24 @@ We welcome contributions from the community! Whether you've found a bug or have 
 
 Let's make AvahiPlatform even better together!
 
+## Contributors 🎉
+
+We would like to thank the following individuals for their valuable contributions:
+
+### Avahi Team Members:
+- **Abel Cotoñeto Padilla**
+- **Sergio Martinez**
+- **Nashita Khandaker**
+- **Diana Lopez**
+- **Shivangi Motwani**
+- **Urvish Patel**
+- **Amol Walnuj**
+- **Om Patel**
+- **Vivek Gohel**
+
+### AWS Team Member:
+- **Jon Turdiev**
+
 ## License 📄
 
 This project is licensed under the MIT License. See the [Open-source MIT license](https://opensource.org/licenses/MIT) file for details.
