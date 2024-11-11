@@ -362,7 +362,6 @@ We're here to help! If you have any questions, suggestions, or just want to say 
 Lead by Dhruv Motwani : https://github.com/DhruvAvahi
 
 Contributors: 
-
 - Abel : https://github.com/AbelCotonetoPadilla
 - Amol : https://github.com/Amoldwalunj-awahi
 - Diana : https://github.com/diana-avahitech
