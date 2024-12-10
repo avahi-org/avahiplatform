@@ -2,21 +2,21 @@
     "functions": {
         "avahiplatform.main.query_csv": {
             "model_name": "default_model",
-            "total_requests": 2,
-            "total_response_time_ms": 12642.18179999807,
-            "avg_response_time_ms": 6321.090899999035,
+            "total_requests": 6,
+            "total_response_time_ms": 46765.526399998635,
+            "avg_response_time_ms": 7794.254399999772,
             "input_cost_dollars": 0.0,
             "output_cost_dollars": 0.0,
             "cumulative_total_cost_dollars": 0.0
         },
         "avahiplatform.main.summarize": {
             "model_name": "default_model",
-            "total_requests": 2,
-            "total_response_time_ms": 13592.153300003702,
-            "avg_response_time_ms": 6796.076650001851,
-            "input_cost_dollars": 0.0026249999999999997,
-            "output_cost_dollars": 0.006675,
-            "cumulative_total_cost_dollars": 0.0093
+            "total_requests": 6,
+            "total_response_time_ms": 47381.09660000464,
+            "avg_response_time_ms": 7896.849433334107,
+            "input_cost_dollars": 0.007875,
+            "output_cost_dollars": 0.020054999999999996,
+            "cumulative_total_cost_dollars": 0.027930000000000003
         }
     }
 }
