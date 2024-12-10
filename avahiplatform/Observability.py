@@ -19,7 +19,7 @@ class Observability:
 
     def __init__(self):
         if not hasattr(self, 'initialized'):
-            self.metrics_file = 'metrics.json'
+            self.metrics_file = 'metrics.jsonl'
             self.prometheus_started = False
             self.prometheus_port = 8000
             self.registry = REGISTRY
@@ -35,40 +35,56 @@ class Observability:
             else:
                 self.metrics_data = {"functions": {}}
 
-            # Create Prometheus metrics
-            self.request_counter = Counter(
+            # Ensure Prometheus metrics are not duplicated
+            self.request_counter = self._get_or_create_counter(
                 'bedrock_requests_total',
                 'Total number of requests to Bedrock',
-                ['function_name', 'model_name'],
-                registry=self.registry
+                ['function_name', 'model_name']
             )
-            self.response_time = Histogram(
+            self.response_time = self._get_or_create_histogram(
                 'bedrock_response_time_milliseconds',
                 'Response time in milliseconds',
-                ['function_name', 'model_name'],
-                registry=self.registry
+                ['function_name', 'model_name']
             )
-            self.input_cost_tracker = Counter(
+            self.input_cost_tracker = self._get_or_create_counter(
                 'bedrock_input_cost_dollars',
                 'Total input cost in dollars',
-                ['function_name', 'model_name'],
-                registry=self.registry
+                ['function_name', 'model_name']
             )
-            self.output_cost_tracker = Counter(
+            self.output_cost_tracker = self._get_or_create_counter(
                 'bedrock_output_cost_dollars',
                 'Total output cost in dollars',
-                ['function_name', 'model_name'],
-                registry=self.registry
+                ['function_name', 'model_name']
             )
-            self.total_cost = Gauge(
+            self.total_cost = self._get_or_create_gauge(
                 'bedrock_total_cost_dollars',
-                'Total cumulative cost in dollars',
-                registry=self.registry
+                'Total cumulative cost in dollars'
             )
 
             self.initialized = True
 
-    def initialize(self, metrics_file='metrics.json', start_prometheus=False, prometheus_port=8000):
+    def _get_or_create_counter(self, name, documentation, labelnames):
+        try:
+            return Counter(name, documentation, labelnames, registry=self.registry)
+        except ValueError:
+            # Metric already exists
+            return self.registry._names_to_collectors[name]
+
+    def _get_or_create_histogram(self, name, documentation, labelnames):
+        try:
+            return Histogram(name, documentation, labelnames, registry=self.registry)
+        except ValueError:
+            # Metric already exists
+            return self.registry._names_to_collectors[name]
+
+    def _get_or_create_gauge(self, name, documentation):
+        try:
+            return Gauge(name, documentation, registry=self.registry)
+        except ValueError:
+            # Metric already exists
+            return self.registry._names_to_collectors[name]
+
+    def initialize(self, metrics_file='metrics.jsonl', start_prometheus=False, prometheus_port=8000):
         self.metrics_file = metrics_file
         self.prometheus_port = prometheus_port
         if start_prometheus and not self.prometheus_started:
@@ -104,7 +120,7 @@ class Observability:
             self.output_cost_tracker.labels(function_name, model_name).inc(output_cost)
             self.total_cost.inc(total_cost)
 
-            # Update metrics.json
+            # Update metrics.jsonl
             self._update_metrics_file(
                 function_name,
                 model_name,
