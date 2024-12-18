@@ -4,7 +4,7 @@ from prometheus_client import Counter, Histogram, Gauge, start_http_server, REGI
 import threading
 import json
 from datetime import datetime
-
+import os
 
 class Observability:
     _instance = None
@@ -22,23 +22,67 @@ class Observability:
             self.metrics_file = 'metrics.jsonl'
             self.prometheus_started = False
             self.prometheus_port = 8000
-
-            # Use the global registry
             self.registry = REGISTRY
 
-            # Create metrics
-            self.request_counter = Counter('bedrock_requests_total', 'Total number of requests to Bedrock',
-                                           ['function_name', 'model_name'], registry=self.registry)
-            self.response_time = Histogram('bedrock_response_time_milliseconds', 'Response time in milliseconds',
-                                           ['function_name', 'model_name'], registry=self.registry)
-            self.input_cost_tracker = Counter('bedrock_input_cost_dollars', 'Total input cost in dollars',
-                                              ['function_name', 'model_name'], registry=self.registry)
-            self.output_cost_tracker = Counter('bedrock_output_cost_dollars', 'Total output cost in dollars',
-                                               ['function_name', 'model_name'], registry=self.registry)
-            self.total_cost = Gauge('bedrock_total_cost_dollars', 'Total cumulative cost in dollars',
-                                    registry=self.registry)
+            # Load existing metrics or initialize
+            self._metrics_lock = threading.Lock()
+            if os.path.exists(self.metrics_file):
+                with open(self.metrics_file, 'r') as f:
+                    try:
+                        self.metrics_data = json.load(f)
+                    except json.JSONDecodeError:
+                        self.metrics_data = {"functions": {}}
+            else:
+                self.metrics_data = {"functions": {}}
+
+            # Ensure Prometheus metrics are not duplicated
+            self.request_counter = self._get_or_create_counter(
+                'bedrock_requests_total',
+                'Total number of requests to Bedrock',
+                ['function_name', 'model_name']
+            )
+            self.response_time = self._get_or_create_histogram(
+                'bedrock_response_time_milliseconds',
+                'Response time in milliseconds',
+                ['function_name', 'model_name']
+            )
+            self.input_cost_tracker = self._get_or_create_counter(
+                'bedrock_input_cost_dollars',
+                'Total input cost in dollars',
+                ['function_name', 'model_name']
+            )
+            self.output_cost_tracker = self._get_or_create_counter(
+                'bedrock_output_cost_dollars',
+                'Total output cost in dollars',
+                ['function_name', 'model_name']
+            )
+            self.total_cost = self._get_or_create_gauge(
+                'bedrock_total_cost_dollars',
+                'Total cumulative cost in dollars'
+            )
 
             self.initialized = True
+
+    def _get_or_create_counter(self, name, documentation, labelnames):
+        try:
+            return Counter(name, documentation, labelnames, registry=self.registry)
+        except ValueError:
+            # Metric already exists
+            return self.registry._names_to_collectors[name]
+
+    def _get_or_create_histogram(self, name, documentation, labelnames):
+        try:
+            return Histogram(name, documentation, labelnames, registry=self.registry)
+        except ValueError:
+            # Metric already exists
+            return self.registry._names_to_collectors[name]
+
+    def _get_or_create_gauge(self, name, documentation):
+        try:
+            return Gauge(name, documentation, registry=self.registry)
+        except ValueError:
+            # Metric already exists
+            return self.registry._names_to_collectors[name]
 
     def initialize(self, metrics_file='metrics.jsonl', start_prometheus=False, prometheus_port=8000):
         self.metrics_file = metrics_file
@@ -56,10 +100,10 @@ class Observability:
         @wraps(func)
         def wrapper(*args, **kwargs):
             start_time = time.perf_counter()
-
             function_name = f"{func.__module__}.{func.__qualname__}"
             model_name = kwargs.get('model_name', 'default_model')
 
+            # Increment Prometheus metrics
             self.request_counter.labels(function_name, model_name).inc()
 
             result = func(*args, **kwargs)
@@ -67,6 +111,7 @@ class Observability:
             response_time_ms = (time.perf_counter() - start_time) * 1000
             self.response_time.labels(function_name, model_name).observe(response_time_ms)
 
+            # Extract costs if present
             input_cost, output_cost, total_cost = 0.0, 0.0, 0.0
             if isinstance(result, tuple) and len(result) >= 4:
                 input_cost, output_cost, total_cost = result[1], result[2], result[3]
@@ -75,27 +120,48 @@ class Observability:
             self.output_cost_tracker.labels(function_name, model_name).inc(output_cost)
             self.total_cost.inc(total_cost)
 
-            self._log_metrics_to_file(function_name, model_name, response_time_ms, input_cost, output_cost, total_cost)
+            # Update metrics.jsonl
+            self._update_metrics_file(
+                function_name,
+                model_name,
+                response_time_ms,
+                input_cost,
+                output_cost,
+                total_cost
+            )
 
             return result
-
         return wrapper
 
-    def _log_metrics_to_file(self, function_name, model_name, response_time_ms, input_cost, output_cost, total_cost):
-        metric_entry = {
-            'timestamp': datetime.now().isoformat(),
-            'function_name': function_name,
-            'model_name': model_name,
-            'total_requests': self.request_counter.labels(function_name, model_name)._value.get(),
-            'response_time_ms': response_time_ms,
-            'input_cost': input_cost,
-            'output_cost': output_cost,
-            'total_cost': total_cost,
-            'cumulative_total_cost': self.total_cost._value.get()
-        }
+    def _update_metrics_file(self, function_name, model_name, response_time_ms, input_cost, output_cost, total_cost):
+        with self._metrics_lock:
+            if "functions" not in self.metrics_data:
+                self.metrics_data["functions"] = {}
 
-        with open(self.metrics_file, 'a') as f:
-            f.write(json.dumps(metric_entry) + '\n')
+            if function_name not in self.metrics_data["functions"]:
+                self.metrics_data["functions"][function_name] = {
+                    "model_name": model_name,
+                    "total_requests": 0,
+                    "total_response_time_ms": 0.0,
+                    "avg_response_time_ms": 0.0,
+                    "input_cost_dollars": 0.0,
+                    "output_cost_dollars": 0.0,
+                    "cumulative_total_cost_dollars": 0.0
+                }
+
+            func_metrics = self.metrics_data["functions"][function_name]
+
+            # Update metrics
+            func_metrics["total_requests"] += 1
+            func_metrics["total_response_time_ms"] += response_time_ms
+            func_metrics["avg_response_time_ms"] = func_metrics["total_response_time_ms"] / func_metrics["total_requests"]
+            func_metrics["input_cost_dollars"] += input_cost
+            func_metrics["output_cost_dollars"] += output_cost
+            func_metrics["cumulative_total_cost_dollars"] += total_cost
+
+            # Write back to the JSON file
+            with open(self.metrics_file, 'w') as f:
+                json.dump(self.metrics_data, f, indent=4)
 
 
 observability = Observability()

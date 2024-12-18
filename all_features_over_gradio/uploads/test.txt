@@ -1,0 +1,66 @@
+ICD-10 Code Generation Process:
+
+Patient Encounter:
+
+Healthcare provider examines patient
+Diagnoses condition or performs procedure
+
+
+Documentation:
+
+Provider records detailed clinical notes
+Includes symptoms, diagnoses, procedures
+
+
+Medical Coding:
+
+Trained coder reviews documentation
+Identifies relevant diagnoses and procedures
+
+
+Code Selection:
+
+Coder navigates ICD-10-CM (diagnosis) or ICD-10-PCS (procedure) manual
+Locates appropriate category and subcategory
+
+
+Code Specificity:
+
+Selects most specific code based on documentation
+Considers factors like laterality, severity, and etiology
+
+
+Code Verification:
+
+Checks for correct code structure (3-7 characters)
+Ensures all necessary digits are included
+
+
+Multiple Coding:
+
+Assigns additional codes if multiple conditions present
+Follows coding guidelines for primary and secondary diagnoses
+
+
+Compliance Check:
+
+Verifies adherence to coding rules and guidelines
+Ensures code matches documentation
+
+
+Quality Assurance:
+
+Second coder or supervisor may review for accuracy
+Automated systems may flag potential errors
+
+
+Code Finalization:
+
+Approved codes are entered into patient's medical record
+Codes are used for billing, reporting, and data analysis
+
+
+Continuous Education:
+
+Coders stay updated on ICD-10 changes and updates
+Regular training ensures accurate and compliant coding
