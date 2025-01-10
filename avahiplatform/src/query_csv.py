@@ -101,9 +101,9 @@ class QueryCSV:
         prompt = f"""SYSTEM: {system_message}\nUSER: {user_message}"""
 
         if stream:
-            return self.bedrockchat.invoke_stream_parsed(prompt)
+            return self.bedrockchat.invoke_stream_parsed([{"text": prompt}])
         else:
-            return self.bedrockchat.invoke(prompt)
+            return self.bedrockchat.invoke([{"text": prompt}])
 
     @track_observability
     def _generate_human_readable_answer(
@@ -139,9 +139,9 @@ class QueryCSV:
         prompt = f"""SYSTEM: {system_message}\nUSER: {user_message}"""
 
         if stream:
-            return self.bedrockchat.invoke_stream_parsed(prompt)
+            return self.bedrockchat.invoke_stream_parsed([{"text": prompt}])
         else:
-            return self.bedrockchat.invoke(prompt)
+            return self.bedrockchat.invoke([{"text": prompt}])
 
     def query_from_file(self, query: str, csv_file_paths: dict, stream: bool = False) -> dict:
         """

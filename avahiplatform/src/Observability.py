@@ -101,14 +101,21 @@ class Observability:
         def wrapper(*args, **kwargs):
             start_time = time.perf_counter()
             function_name = f"{func.__module__}.{func.__qualname__}"
-            model_name = kwargs.get('model_name', 'default_model')
+            # Initialize model_name as 'unknown_model' by default
+            model_name = 'unknown_model'
+            # model_name = kwargs.get('model_name', 'default_model')
 
             # Increment Prometheus metrics
-            self.request_counter.labels(function_name, model_name).inc()
 
             result = func(*args, **kwargs)
+            # Extract model_id from the result if available
+            if isinstance(result, dict):
+                model_id = result.get('model_id', '')
+                model_name = model_id
 
             response_time_ms = (time.perf_counter() - start_time) * 1000
+
+            self.request_counter.labels(function_name, model_name).inc()
 
             # Update Prometheus metrics
             self.response_time.labels(function_name, model_name).observe(response_time_ms)

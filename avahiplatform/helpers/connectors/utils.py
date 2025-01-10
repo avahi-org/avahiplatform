@@ -11,7 +11,7 @@ import os
 import numpy as np
 import contextlib
 import ast
-
+import io
 
 class PythonASTREPL:
     def __init__(self, dataframes=None, locals=None, globals=None):

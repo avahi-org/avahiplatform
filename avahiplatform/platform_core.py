@@ -15,6 +15,9 @@ from avahiplatform.src.icd_code_generator import ICDCodeGenerator
 from avahiplatform.src.medical_scribing import MedicalScribe
 from avahiplatform.src.nl2sql import BedrockNL2SQL
 
+import os
+from loguru import logger
+
 
 class AvahiPlatform:
     def __init__(self, 

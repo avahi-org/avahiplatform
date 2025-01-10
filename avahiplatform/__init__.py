@@ -1,57 +1,74 @@
-# from .main import summarize, structredExtraction, DataMasking, nl2sql, imageGeneration, pdfsummarizer, grammarAssistant, productDescriptionAssistant, perform_semantic_search, perform_rag_with_sources, query_csv, medicalscribing, icdcoding
-# from . import helpers
-# from .main import AvahiPlatform
-
-# Initialize the platform instance
-# avahi_platform = AvahiPlatform()
-
-# # Expose the functionalities
-# summarize = avahi_platform.
-# structredExtraction = avahi_platform.structredExtraction
-# DataMasking = avahi_platform.DataMasking
-# nl2sql = avahi_platform.nl2sql
-# imageGeneration = avahi_platform.imageGeneration
-# pdfsummarizer = avahi_platform.pdfsummarizer
-# grammarAssistant = avahi_platform.grammarAssistant
-# productDescriptionAssistant = avahi_platform.productDescriptionAssistant
-# perform_semantic_search = avahi_platform.perform_semantic_search
-# perform_rag_with_sources = avahi_platform.perform_rag_with_sources
-# query_csv = avahi_platform.query_csv
-# medicalscribing = avahi_platform.medicalscribing
-# icdcoding = avahi_platform.icdcoding
-# chatbot = avahi_platform.chatbot
-# initialize_observability = avahi_platform.initialize_observability
-# imageSimilarity = avahi_platform.imageSimilarity
-
 from .platform_core import AvahiPlatform
 
-# Initialize the platform instance
-avahi_platform = AvahiPlatform()
+# Initialize with default settings
+_platform_instance = None
 
-# Expose the functionalities
-summarize_text = avahi_platform.summarize_text
-summarize_document = avahi_platform.summarize_document
-summarize_image = avahi_platform.summarize_image
-summarize_s3_document = avahi_platform.summarize_s3_document
+def configure(
+    aws_access_key_id=None,
+    aws_secret_access_key=None,
+    aws_session_token=None,
+    region_name=None,
+    input_tokens_price=None,
+    output_tokens_price=None,
+    input_bucket_name_for_medical_scribing="",
+    iam_arn_for_medical_scribing="",
+    default_model_name='anthropic.claude-3-sonnet-20240229-v1:0'
+):
+    """
+    Configure the AvahiPlatform with custom settings.
+    Must be called before using any platform functionalities.
+    """
+    global _platform_instance
+    _platform_instance = AvahiPlatform(
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        aws_session_token=aws_session_token,
+        region_name=region_name,
+        input_tokens_price=input_tokens_price,
+        output_tokens_price=output_tokens_price,
+        input_bucket_name_for_medical_scribing=input_bucket_name_for_medical_scribing,
+        iam_arn_for_medical_scribing=iam_arn_for_medical_scribing,
+        default_model_name=default_model_name
+    )
+    _init_platform_exports()
 
-# Core functionalities
-structredExtraction = avahi_platform.structredExtraction
-mask_data = avahi_platform.mask_data
-grammar_assistant = avahi_platform.grammar_assistant
-product_description_assistant = avahi_platform.product_description_assistant
+def _init_platform_exports():
+    """Initialize all platform exports with the configured instance."""
+    global summarize_text, summarize_document, summarize_image, summarize_s3_document
+    global structredExtraction, mask_data, grammar_assistant, product_description_assistant
+    global nl2sql, query_csv, medicalscribing, generate_icdcode, chatbot, initialize_observability
+    global _platform_instance  
 
-# AI Services
-nl2sql = avahi_platform.nl2sql
-# imageGeneration = avahi_platform.imageGeneration
-# perform_semantic_search = avahi_platform.perform_semantic_search
-# perform_rag_with_sources = avahi_platform.perform_rag_with_sources
-# imageSimilarity = avahi_platform.imageSimilarity
+    if _platform_instance is None:
+        _platform_instance = AvahiPlatform()  # Initialize with defaults if not configured
 
-# Healthcare Services
-query_csv = avahi_platform.query_csv
-medicalscribing = avahi_platform.medicalscribing
-generate_icdcode = avahi_platform.generate_icdcode
+    # Expose the functionalities
+    summarize_text = _platform_instance.summarize_text
+    summarize_document = _platform_instance.summarize_document
+    summarize_image = _platform_instance.summarize_image
+    summarize_s3_document = _platform_instance.summarize_s3_document
 
-# Chat and Observability
-chatbot = avahi_platform.chatbot
-initialize_observability = avahi_platform.initialize_observability
+    # Core functionalities
+    structredExtraction = _platform_instance.structredExtraction
+    mask_data = _platform_instance.mask_data
+    grammar_assistant = _platform_instance.grammar_assistant
+    product_description_assistant = _platform_instance.product_description_assistant
+
+    # AI Services
+    nl2sql = _platform_instance.nl2sql
+    # imageGeneration = _platform_instance.imageGeneration
+    # perform_semantic_search = _platform_instance.perform_semantic_search
+    # perform_rag_with_sources = _platform_instance.perform_rag_with_sources
+    # imageSimilarity = _platform_instance.imageSimilarity
+
+    # Healthcare Services
+    query_csv = _platform_instance.query_csv
+    medicalscribing = _platform_instance.medicalscribing
+    generate_icdcode = _platform_instance.generate_icdcode
+
+    # Chat and Observability
+    chatbot = _platform_instance.chatbot
+    initialize_observability = _platform_instance.initialize_observability
+
+# Initialize with default settings
+_init_platform_exports()

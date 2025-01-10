@@ -1,20 +1,36 @@
 {
     "functions": {
-        "avahiplatform.src.chatbot.BedrockChatbot.chat": {
-            "model_name": "default_model",
-            "total_requests": 2,
-            "response_text": "Sure, here's a simple Python application for calculating basic arithmetic operations:\n\n```python\ndef add(x, y):\n    return x + y\n\ndef subtract(x, y):\n    return x - y\n\ndef multiply(x, y):\n    return x * y\n\ndef divide(x, y):\n    if y == 0:\n        return \"Error: Division by zero is not allowed.\"\n    else:\n        return x / y\n\nprint(\"Welcome to the Calculator App!\")\nprint(\"Select an operation:\")\nprint(\"1. Addition\")\nprint(\"2. Subtraction\")\nprint(\"3. Multiplication\")\nprint(\"4. Division\")\n\nchoice = input(\"Enter your choice (1/2/3/4): \")\n\nnum1 = float(input(\"Enter the first number: \"))\nnum2 = float(input(\"Enter the second number: \"))\n\nif choice == '1':\n    result = add(num1, num2)\n    print(f\"{num1} + {num2} = {result}\")\nelif choice == '2':\n    result = subtract(num1, num2)\n    print(f\"{num1} - {num2} = {result}\")\nelif choice == '3':\n    result = multiply(num1, num2)\n    print(f\"{num1} * {num2} = {result}\")\nelif choice == '4':\n    result = divide(num1, num2)\n    print(f\"{num1} / {num2} = {result}\")\nelse:\n    print(\"Invalid choice. Please try again.\")\n```\n\nHere's how the application works:\n\n1. The program defines four functions: `add`, `subtract`, `multiply`, and `divide`, which perform the respective arithmetic operations on two numbers.\n2. The user is prompted to select an operation from the menu (1 for addition, 2 for subtraction, 3 for multiplication, and 4 for division).\n3. The user is then asked to enter two numbers.\n4. Based on the user's choice, the corresponding arithmetic operation is performed on the two numbers using the respective function.\n5. The result is printed to the console.\n\nNote that the `divide` function includes a check to prevent division by zero, which would result in an error.",
-            "inputTokens": 25,
-            "outputTokens": 512,
+        "avahiplatform.src.query_csv.QueryCSV._generate_python_code": {
+            "model_name": "anthropic.claude-3-sonnet-20240229-v1:0",
+            "total_requests": 3,
+            "response_text": "df1.shape[0]",
+            "inputTokens": 899,
+            "outputTokens": 10,
             "time_to_first_token": null,
-            "time_to_last_token": 5.862718000000001,
+            "time_to_last_token": 1.5750839999999986,
             "time_per_output_token": null,
-            "input_token_cost": 7.5e-05,
-            "output_token_cost": 0.007679999999999999,
-            "total_cost": 0.007755,
-            "model_id": "default_model",
+            "input_token_cost": 0.002697,
+            "output_token_cost": 0.00015,
+            "total_cost": 0.002847,
+            "model_id": "anthropic.claude-3-sonnet-20240229-v1:0",
             "provider": null,
-            "cumulative_total_cost_dollars": 0.008496
+            "cumulative_total_cost_dollars": 0.008541
+        },
+        "avahiplatform.src.query_csv.QueryCSV._generate_human_readable_answer": {
+            "model_name": "anthropic.claude-3-sonnet-20240229-v1:0",
+            "total_requests": 3,
+            "response_text": "There are 769 entries in df1.",
+            "inputTokens": 135,
+            "outputTokens": 13,
+            "time_to_first_token": null,
+            "time_to_last_token": 0.6764826999999993,
+            "time_per_output_token": null,
+            "input_token_cost": 0.00040500000000000003,
+            "output_token_cost": 0.000195,
+            "total_cost": 0.0006000000000000001,
+            "model_id": "anthropic.claude-3-sonnet-20240229-v1:0",
+            "provider": null,
+            "cumulative_total_cost_dollars": 0.0018000000000000002
         }
     }
 }
