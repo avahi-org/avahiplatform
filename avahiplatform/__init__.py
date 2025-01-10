@@ -42,10 +42,10 @@ product_description_assistant = avahi_platform.product_description_assistant
 
 # AI Services
 nl2sql = avahi_platform.nl2sql
-imageGeneration = avahi_platform.imageGeneration
-perform_semantic_search = avahi_platform.perform_semantic_search
-perform_rag_with_sources = avahi_platform.perform_rag_with_sources
-imageSimilarity = avahi_platform.imageSimilarity
+# imageGeneration = avahi_platform.imageGeneration
+# perform_semantic_search = avahi_platform.perform_semantic_search
+# perform_rag_with_sources = avahi_platform.perform_rag_with_sources
+# imageSimilarity = avahi_platform.imageSimilarity
 
 # Healthcare Services
 query_csv = avahi_platform.query_csv

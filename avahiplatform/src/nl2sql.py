@@ -1,6 +1,8 @@
 from loguru import logger
 import sqlalchemy
 from sqlalchemy import create_engine, text
+from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
+from typing import Optional, Dict, Any
 
 
 class BedrockNL2SQL:

@@ -16,7 +16,7 @@ class QueryCSV:
     def query_data(
         self, 
         query: str, 
-        dataframes: Dict[str, pd.DataFrame],
+        dataframes: dict[str, pd.DataFrame],
         stream: bool = False
     ) -> dict:
         """
@@ -52,7 +52,7 @@ class QueryCSV:
     def _generate_python_code(
         self, 
         query: str, 
-        dataframes: Dict[str, pd.DataFrame],
+        dataframes: dict[str, pd.DataFrame],
         stream: bool
     ) -> dict:
         """

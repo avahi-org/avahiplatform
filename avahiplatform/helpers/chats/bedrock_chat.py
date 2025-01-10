@@ -58,9 +58,18 @@ class BedrockChat(BaseChat):
         )
 
         # Create Bedrock client
-        self.bedrock = self.boto_helper(service_name="bedrock-runtime")
-        self.s3_client = self.boto_helper(service_name="s3")
+        self.bedrock = self._create_client()
+        self.s3_client = self.boto_helper.create_client(service_name="s3")
         self.s3_helper = S3Helper(s3_client=self.s3_client)
+
+    def _create_client(self, *args, **kwargs):
+        """
+        Creates a Bedrock client using the boto_helper.
+
+        Returns:
+            object: A Bedrock client instance.
+        """
+        return self.boto_helper.create_client(service_name="bedrock-runtime")
 
     def _load_default_pricing(self):
         """
@@ -92,7 +101,7 @@ class BedrockChat(BaseChat):
             dict: The model details retrieved from the Bedrock service.
         """
         # Create a separate client for the Bedrock control plane (non-runtime) API
-        bedrock_control_client = self.boto_helper(service_name="bedrock")
+        bedrock_control_client = self.boto_helper.create_client(service_name="bedrock")
         try:
             if self.model_id.startswith("us."):
                 model_id = self.model_id.split("us.")[1]

@@ -3,7 +3,7 @@ from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
 from avahiplatform.helpers.connectors.boto_helper import BotoHelper
 from avahiplatform.helpers.connectors.s3_helper import S3Helper
 from avahiplatform.helpers.connectors.utils import Utils
-from avahiplatform.src.Observability import track_observability
+from avahiplatform.src.Observability import track_observability, observability
 from avahiplatform.src.summarizer import BedrockSummarizer
 from avahiplatform.src.structredExtraction import BedrockStructuredExtraction
 from avahiplatform.src.productDescriptionGeneration import ProductDescriptionGeneration
@@ -24,8 +24,8 @@ class AvahiPlatform:
                  region_name=None,
                  input_tokens_price=None,
                  output_tokens_price=None,
-                 input_bucket_name_for_medical_scribing=None,
-                 iam_arn_for_medical_scribing=None,
+                 input_bucket_name_for_medical_scribing="",
+                 iam_arn_for_medical_scribing="",
                  default_model_name='anthropic.claude-3-sonnet-20240229-v1:0'):
 
         self.aws_access_key_id = aws_access_key_id
@@ -47,7 +47,7 @@ class AvahiPlatform:
         )
 
         self.s3_helper = S3Helper(
-            boto_helper=self.boto_helper.create_client(service_name="s3")
+            s3_client=self.boto_helper.create_client(service_name="s3")
         )
 
         # Initialize BedrockChat
@@ -132,22 +132,23 @@ class AvahiPlatform:
         self.summarize_video = FunctionWrapper(summarize_video_with_tracking)
         self.summarize_s3_document = FunctionWrapper(summarize_s3_document_with_tracking)
 
-        self.medicalscribing = FunctionWrapper(self.medicalscribing)
+        self.medicalscribing = FunctionWrapper(self._medicalscribing)
         self.generate_icdcode = FunctionWrapper(self.icdcoding)
         self.query_csv = FunctionWrapper(self._query_csv)
         self.structredExtraction = FunctionWrapper(self.structure_extraction)
         self.mask_data = FunctionWrapper(self.data_masking)
         self.grammar_assistant = FunctionWrapper(self.grammar_correction)
         self.product_description_assistant = FunctionWrapper(self.product_description)
-
-        self.imageGeneration = FunctionWrapper(imageGeneration)
         self.nl2sql = FunctionWrapper(self.nlquery2sql)
-        # self.pdfsummarizer = FunctionWrapper(pdfsummarizer)
-        self.perform_semantic_search = FunctionWrapper(perform_semantic_search)
-        self.perform_rag_with_sources = FunctionWrapper(perform_rag_with_sources)
-        self.imageSimilarity = imageSimilarity
 
-        self.initialize_observability = initialize_observability
+
+        # self.imageGeneration = FunctionWrapper(self.imageGeneration)
+        # self.pdfsummarizer = FunctionWrapper(pdfsummarizer)
+        # self.perform_semantic_search = FunctionWrapper(perform_semantic_search)
+        # self.perform_rag_with_sources = FunctionWrapper(perform_rag_with_sources)
+        # self.imageSimilarity = imageSimilarity
+
+        # self.initialize_observability = self._initialize_observability
 
 
     def icdcoding(self, input_content):
@@ -271,3 +272,15 @@ class AvahiPlatform:
             user_friendly_error = Utils.get_user_friendly_error(e)
             logger.error(user_friendly_error)
             return "None"
+
+    def initialize_observability(self, metrics_file='metrics.jsonl', start_prometheus=False, prometheus_port=8000):
+        """
+        Initialize the observability system.
+
+        :param metrics_file: Path to the file where metrics will be logged
+        :param start_prometheus: Whether to start the Prometheus server
+        :param prometheus_port: Port on which to start the Prometheus server
+        """
+        observability.initialize(metrics_file=metrics_file,
+                                start_prometheus=start_prometheus,
+                                prometheus_port=prometheus_port)

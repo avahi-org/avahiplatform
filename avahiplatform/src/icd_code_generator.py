@@ -7,10 +7,10 @@ from avahiplatform.helpers.connectors.s3_helper import S3Helper
 from avahiplatform.helpers.connectors.utils import Utils
 
 class ICDCodeGenerator:
-    def __init__(self, boto_helper: BotoHelper, s3_helper: S3Helper):
-        self.boto_helper = boto_helper
+    def __init__(self, bedrock_helper: BotoHelper, s3_helper: S3Helper):
+        self.bedrock_helper = bedrock_helper
         self.s3_helper = s3_helper
-        self.cm_client = self.boto_helper.create_client(service_name="comprehendmedical")
+        self.cm_client = self.bedrock_helper.create_client(service_name="comprehendmedical")
 
     def generate_icdcode(self, text):
         try:

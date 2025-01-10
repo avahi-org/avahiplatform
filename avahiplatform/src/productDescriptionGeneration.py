@@ -3,14 +3,14 @@ from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
 
 
 class ProductDescriptionGeneration:
-    def __init__(self, bedrock_chat: BedrockChat):
+    def __init__(self, bedrockchat: BedrockChat):
         """
         Initializes the ProductDescriptionGeneration with a BedrockChat instance.
 
         Args:
             bedrock_chat (BedrockChat): An instance of BedrockChat for model interactions.
         """
-        self.bedrock_chat = bedrock_chat
+        self.bedrock_chat = bedrockchat
 
     def generate_product_description(
         self, 

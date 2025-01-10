@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Any, List
 from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
-from Observability import track_observability
+from .Observability import track_observability
+import gradio as gr
 
 class BedrockChatbot:
     def __init__(
