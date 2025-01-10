@@ -1,0 +1,142 @@
+{
+    "Nova Pro": {
+        "input_tokens_price": 0.0008,
+        "output_tokens_price": 0.0032
+    },
+    "Nova Lite": {
+        "input_tokens_price": 0.00006,
+        "output_tokens_price": 0.00024
+    },
+    "Nova Micro": {
+        "input_tokens_price": 0.000035,
+        "output_tokens_price": 0.00014
+    },
+    "Titan Text G1 - Lite": {
+        "input_tokens_price": 0.00015,
+        "output_tokens_price": 0.0002
+    },
+    "Titan Text G1 - Express": {
+        "input_tokens_price": 0.0002,
+        "output_tokens_price": 0.0006
+    },
+    "Jurassic-2 Mid": {
+        "input_tokens_price": 0.0125,
+        "output_tokens_price": 0.0125
+    },
+    "Jurassic-2 Ultra": {
+        "input_tokens_price": 0.0188,
+        "output_tokens_price": 0.0188
+    },
+    "Jamba-Instruct": {
+        "input_tokens_price": 0.0005,
+        "output_tokens_price": 0.0007
+    },
+    "Jamba 1.5 Large": {
+        "input_tokens_price": 0.002,
+        "output_tokens_price": 0.008
+    },
+    "Jamba 1.5 Mini": {
+        "input_tokens_price": 0.0002,
+        "output_tokens_price": 0.0004
+    },
+    "Claude Instant": {
+        "input_tokens_price": 0.0008,
+        "output_tokens_price": 0.0024
+    },
+    "Claude": {
+        "input_tokens_price": 0.008,
+        "output_tokens_price": 0.024
+    },
+    "Claude 3 Sonnet": {
+        "input_tokens_price": 0.003,
+        "output_tokens_price": 0.015
+    },
+    "Claude 3 Haiku": {
+        "input_tokens_price": 0.00025,
+        "output_tokens_price": 0.00125
+    },
+    "Claude 3 Opus": {
+        "input_tokens_price": 0.015,
+        "output_tokens_price": 0.075
+    },
+    "Claude 3.5 Sonnet": {
+        "input_tokens_price": 0.003,
+        "output_tokens_price": 0.015
+    },
+    "Claude 3.5 Sonnet v2": {
+        "input_tokens_price": 0.003,
+        "output_tokens_price": 0.015
+    },
+    "Claude 3.5 Haiku": {
+        "input_tokens_price": 0.0008,
+        "output_tokens_price": 0.004
+    },
+    "Command": {
+        "input_tokens_price": 0.0015,
+        "output_tokens_price": 0.0020
+    },
+    "Command R": {
+        "input_tokens_price": 0.0005,
+        "output_tokens_price": 0.0015
+    },
+    "Command R+": {
+        "input_tokens_price": 0.0030,
+        "output_tokens_price": 0.0150
+    },
+    "Command Light": {
+        "input_tokens_price": 0.0003,
+        "output_tokens_price": 0.0006
+    },
+    "Llama 3 8B Instruct": {
+        "input_tokens_price": 0.0003,
+        "output_tokens_price": 0.0006
+    },
+    "Llama 3 70B Instruct": {
+        "input_tokens_price": 0.00265,
+        "output_tokens_price": 0.0035
+    },
+    "Llama 3.1 8B Instruct": {
+        "input_tokens_price": 0.00022,
+        "output_tokens_price": 0.00022
+    },
+    "Llama 3.1 70B Instruct": {
+        "input_tokens_price": 0.00072,
+        "output_tokens_price": 0.00072
+    },
+    "Llama 3.2 11B Instruct": {
+        "input_tokens_price": 0.00016,
+        "output_tokens_price": 0.00016
+    },
+    "Llama 3.2 90B Instruct": {
+        "input_tokens_price": 0.00072,
+        "output_tokens_price": 0.00072
+    },
+    "Llama 3.2 1B Instruct": {
+        "input_tokens_price": 0.0001,
+        "output_tokens_price": 0.0001
+    },
+    "Llama 3.2 3B Instruct": {
+        "input_tokens_price": 0.00015,
+        "output_tokens_price": 0.00015
+    },
+    "Llama 3.3 70B Instruct": {
+        "input_tokens_price": 0.00072,
+        "output_tokens_price": 0.00072
+    },
+    "Mistral 7B Instruct": {
+        "input_tokens_price": 0.00015,
+        "output_tokens_price": 0.0002
+    },
+    "Mixtral 8x7B Instruct": {
+        "input_tokens_price": 0.00045,
+        "output_tokens_price": 0.0007
+    },
+    "Mistral Large (24.02)": {
+        "input_tokens_price": 0.004,
+        "output_tokens_price": 0.012
+    },
+    "Mistral Small (24.02)": {
+        "input_tokens_price": 0.001,
+        "output_tokens_price": 0.003
+    }
+}
