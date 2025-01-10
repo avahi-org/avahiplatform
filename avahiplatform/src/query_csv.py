@@ -2,7 +2,7 @@ import pandas as pd
 from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
 from avahiplatform.helpers.connectors.utils import PythonASTREPL
 from avahiplatform.helpers.connectors.s3_helper import S3Helper
-from .Observability import track_observability
+from avahiplatform.src.Observability import track_observability
 
 class QueryCSV:
     def __init__(self, 

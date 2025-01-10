@@ -1,22 +1,20 @@
-from avahiplatform.helpers import bedrock_helper
-import gradio as gr
+from avahiplatform.src.create_ui_wrapper_from_gradio import FunctionWrapper
+from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
+from avahiplatform.helpers.connectors.boto_helper import BotoHelper
+from avahiplatform.helpers.connectors.s3_helper import S3Helper
+from avahiplatform.helpers.connectors.utils import Utils
+from avahiplatform.src.Observability import track_observability
+from avahiplatform.src.summarizer import BedrockSummarizer
+from avahiplatform.src.structredExtraction import BedrockStructuredExtraction
+from avahiplatform.src.productDescriptionGeneration import ProductDescriptionGeneration
+from avahiplatform.src.grammarCorrection import GrammarCorrection
+from avahiplatform.src.data_masking import DataMasking
+from avahiplatform.src.chatbot import BedrockChatbot
+from avahiplatform.src.query_csv import QueryCSV
+from avahiplatform.src.icd_code_generator import ICDCodeGenerator
+from avahiplatform.src.medical_scribing import MedicalScribe
+from avahiplatform.src.nl2sql import BedrockNL2SQL
 
-from .create_ui_wrapper_from_gradio import FunctionWrapper
-from .helpers.chats.bedrock_chat import BedrockChat
-from .helpers.connectors.boto_helper import BotoHelper
-from .helpers.connectors.s3_helper import S3Helper
-from .helpers.connectors.utils import Utils
-from .Observability import observability, track_observability
-from .summarizer import BedrockSummarizer
-from .structredExtraction import BedrockStructuredExtraction
-from .productDescriptionGeneration import ProductDescriptionGeneration
-from .grammarCorrection import GrammarCorrection
-from .data_masking import DataMasking
-from .chatbot import BedrockChatbot
-from .query_csv import QueryCSV
-from .icd_code_generator import ICDCodeGenerator
-from .medical_scribing import MedicalScribe
-from .nl2sql import BedrockNL2SQL
 
 class AvahiPlatform:
     def __init__(self, 

@@ -23,7 +23,7 @@
 # initialize_observability = avahi_platform.initialize_observability
 # imageSimilarity = avahi_platform.imageSimilarity
 
-from .main_v2 import AvahiPlatform
+from .platform_core import AvahiPlatform
 
 # Initialize the platform instance
 avahi_platform = AvahiPlatform()
