@@ -2,6 +2,8 @@ from loguru import logger
 from io import BytesIO
 from .utils import Utils
 import os
+import pandas as pd
+import io
 
 
 class S3Helper:
@@ -9,7 +11,7 @@ class S3Helper:
         self.s3_client = s3_client
 
     def read_s3_file(self, s3_file_path):
-        bucket_name, key_name = self._parse_s3_path(s3_file_path)
+        bucket_name, key_name = self.parse_s3_path(s3_file_path)
         try:
             logger.info(f"Fetching file from S3: {s3_file_path}")
             response = self.s3_client.get_object(
@@ -18,9 +20,9 @@ class S3Helper:
             body = response['Body'].read()
 
             if 'application/pdf' in content_type:
-                text = self.read_pdf_from_stream(BytesIO(body))
+                text = Utils.read_pdf_from_stream(BytesIO(body))
             elif 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' in content_type:
-                text = self.read_docx(BytesIO(body))
+                text = Utils.read_docx(BytesIO(body))
             else:
                 text = body.decode('utf-8')
 
@@ -182,3 +184,32 @@ class S3Helper:
         except Exception as e:
             logger.error(f"Error fetching file from S3 URI: {str(e)}")
             return None, None
+
+    def fetch_csv_files(self, s3_file_paths: dict) -> dict:
+        dataframes = {}
+        for name, s3_file_path in s3_file_paths.items():
+            bucket_name, key_name = self.parse_s3_path(s3_file_path)
+            try:
+                logger.info(f"Fetching file from S3: {s3_file_path}")
+                response = self.s3_client.get_object(Bucket=bucket_name, Key=key_name)
+                content_type = response['ContentType']
+                body = response['Body'].read()
+                _, file_extension = os.path.splitext(key_name)
+                
+                if content_type == 'text/csv' or file_extension.lower() == '.csv':
+                    dataframes[name] = pd.read_csv(io.StringIO(body.decode('utf-8')))
+                else:
+                    logger.error(f"Unsupported content type: {content_type}. Expected 'text/csv'.")
+                    raise ValueError(f"Unsupported content type: {content_type}. Expected 'text/csv'.")
+                    
+            except self.s3_client.exceptions.NoSuchKey:
+                logger.error(f"The file {s3_file_path} does not exist in the S3 bucket.")
+                raise ValueError(f"The file {s3_file_path} does not exist in the S3 bucket.")
+            except self.s3_client.exceptions.NoSuchBucket:
+                logger.error(f"The S3 bucket {bucket_name} does not exist.")
+                raise ValueError(f"The S3 bucket {bucket_name} does not exist.")
+            except Exception as e:
+                logger.error(f"Error fetching CSV from S3: {str(e)}")
+                raise ValueError(f"Error fetching CSV from S3: {str(e)}")
+                
+        return dataframes

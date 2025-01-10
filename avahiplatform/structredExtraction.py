@@ -1,61 +1,128 @@
-import os
 from loguru import logger
-from avahi.avahiplatform.avahiplatform.helpers.s3_helper import S3Helper
-from helpers.utils import Utils
-from helpers.bedrock_helper import BedrockHelper
+from typing import Optional, Union, Dict, Any
+from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
 
 
-class BedrockstructredExtraction:
-    def __init__(self, bedrock_helper: BedrockHelper, s3_helper: S3Helper):
-        self.bedrock_helper = bedrock_helper
-        self.s3_helper = s3_helper
+class BedrockStructuredExtraction:
+    def __init__(self, 
+                 bedrockchat: BedrockChat):
+        """
+        Initialize the BedrockStructuredExtraction with BedrockChat instance.
+        
+        Args:
+            bedrockchat: BedrockChat instance for making API calls
+        """
+        self.bedrockchat = bedrockchat
+        
+        # Default system prompt for document entity extraction
+        self.default_prompts = """Extract the following entities from the provided document in a structured JSON format:
+                                1. Name:
+                                2. Places:
 
-    def extract_text(self, text, user_prompt=None, model_name=None):
-        if not text:
-            logger.error("Input text cannot be empty.")
-            raise ValueError("Input text cannot be empty.")
+                                Response should be JSON in the following format:
 
-        prompt = user_prompt if user_prompt else f"""extract the below entities from this model in structured format:
-1. Name:
-2. Places:
+                                {
+                                "Name": ["Name1", "Name2"],
+                                "Places": ["Place1", "Place2"]
+                                }
 
+                                Ensure the output contains only the JSON structure without any additional text."""
 
-Text: {text}
+    def _create_prompt_list(self, content_type: str, content: Union[str, bytes], system_prompt: Optional[str] = None) -> list:
+        """
+        Creates a list of prompts for the BedrockChat API.
+        
+        Args:
+            content_type: Type of content ('document', 's3_document')
+            content: The actual content or path to content
+            system_prompt: Optional custom system prompt
+            
+        Returns:
+            list: List of prompts formatted for BedrockChat
+        """
 
-response should be json in below format
+        if not system_prompt:
+            system_prompt = self.default_prompts
 
-""" + """response should be json in below format
-
-{
-  "Name": ["Name1", "Name2"]
-  "Places": [
-    "Place1",
-    "Place2"
-  ] 
-}
-
-Make sure output has only json output. No other extra words"""
-        return self.bedrock_helper.model_invoke(prompt, model_name)
-
-    def extract_file(self, file_path, user_prompt=None, model_name=None):
-        if not os.path.exists(file_path):
-            logger.error(f"The file at {
-                         file_path} does not exist. Please check the file path.")
-            raise ValueError(
-                f"The file at {file_path} does not exist. Please check the file path.")
-
-        _, file_extension = os.path.splitext(file_path)
-        logger.info(f"Processing file: {file_path}")
-        if file_extension.lower() == '.pdf':
-            text = Utils.read_pdf(file_path)
-        elif file_extension.lower() == '.docx':
-            text = Utils.read_docx(file_path)
+        if content_type == "text":
+            prompts = [
+                {"text": f"System prompt: {system_prompt} \n User: {content}"}
+            ]
         else:
-            with open(file_path, 'r', encoding="utf-8") as file:  # Explicitly setting encoding
-                text = file.read()
+            prompts = [
+                {"text": system_prompt},
+                {content_type: content}
+            ]
+        return prompts
 
-        return self.extract_text(text, user_prompt, model_name)
+    def extract(self, 
+               content_type: str,
+               content: Union[str, bytes],
+               system_prompt: Optional[str] = None,
+               stream: bool = False) -> Dict[str, Any]:
+        """
+        Extract entities from content using the Bedrock model.
+        
+        Args:
+            content_type: Type of content ('document', 's3_document')
+            content: The content to extract entities from (can be text, file path, or S3 path)
+            system_prompt: Optional custom system prompt
+            stream: Whether to stream the response
+            
+        Returns:
+            dict: Response containing extracted entities and metadata
+        """
+        try:
+            prompts = self._create_prompt_list(content_type, content, system_prompt)
+            
+            if stream:
+                return self.bedrockchat.invoke_stream_parsed(prompts)
+            else:
+                return self.bedrockchat.invoke(prompts)
+                
+        except Exception as e:
+            logger.error(f"Error in entity extraction: {str(e)}")
+            raise
 
-    def extract_s3_file(self, s3_file_path, user_prompt=None, model_name=None):
-        text = self.s3_helper.read_s3_file(s3_file_path=s3_file_path)
-        return self.extract_text(text, user_prompt, model_name)
+    def extract_text(self, 
+                      text: str, 
+                      system_prompt: Optional[str] = None,
+                      stream: bool = False) -> Dict[str, Any]:
+        """
+        Extract entities from text content.
+        """
+        return self.extract("text", text, system_prompt, stream)
+
+    def extract_document(self, 
+                         document_path: str,
+                         system_prompt: Optional[str] = None,
+                         stream: bool = False) -> Dict[str, Any]:
+        """
+        Extract entities from a local document file.
+        
+        Args:
+            document_path: Path to the document file
+            system_prompt: Optional custom system prompt
+            stream: Whether to stream the response
+            
+        Returns:
+            dict: Response containing extracted entities and metadata
+        """
+        return self.extract("document", document_path, system_prompt, stream)
+
+    def extract_s3_document(self, 
+                            s3_path: str,
+                            system_prompt: Optional[str] = None,
+                            stream: bool = False) -> Dict[str, Any]:
+        """
+        Extract entities from a document stored in S3.
+        
+        Args:
+            s3_path: S3 path to the document file
+            system_prompt: Optional custom system prompt
+            stream: Whether to stream the response
+            
+        Returns:
+            dict: Response containing extracted entities and metadata
+        """
+        return self.extract("s3_document", s3_path, system_prompt, stream)

@@ -1,155 +1,89 @@
-import boto3
-import time
-from loguru import logger
-import botocore.exceptions
 import pandas as pd
-import os
-import json
-import io
-import contextlib
-import ast
-
-
-class PythonASTREPL:
-    def __init__(self, dataframes=None, locals=None, globals=None):
-        """
-        Initialize the REPL with optional local and global namespaces and dataframes.
-
-        Args:
-            dataframes (dict, optional): A dictionary of DataFrames.
-            locals (dict, optional): Local namespace for code execution.
-            globals (dict, optional): Global namespace for code execution.
-        """
-        self.locals = locals if locals is not None else {}
-        self.globals = globals if globals is not None else {}
-        if dataframes:
-            self.locals.update(dataframes)
-
-    def run(self, code: str) -> str:
-        """Execute the provided Python code and return the result or error message.
-
-        Args:
-            code (str): The Python code to be executed.
-
-        Returns:
-            str: The result of the code execution or an error message.
-        """
-
-        buffer = io.StringIO()
-        assigned_vars = []
-
-        # Parse the code to identify assigned variables
-        try:
-            parsed_code = ast.parse(code)
-            for node in ast.walk(parsed_code):
-                if isinstance(node, ast.Assign):
-                    # For targets in the assignment, get their ids (variable names)
-                    for target in node.targets:
-                        if isinstance(target, ast.Name):
-                            assigned_vars.append(target.id)
-        except Exception as e:
-            return f"Error parsing code: {e}"
-
-        try:
-            with contextlib.redirect_stdout(buffer):
-                try:
-                    # Attempt to compile the code as an expression
-                    compiled_code = compile(code, '<string>', 'eval')
-                    result = eval(compiled_code, self.globals, self.locals)
-                    print(repr(result))
-                except SyntaxError:
-                    # If it isn't an expression, compile it as a statement
-                    compiled_code = compile(code, '<string>', 'exec')
-                    exec(compiled_code, self.globals, self.locals)
-                    result = None
-                    # If no output and variables were assigned, print their values
-                    if not buffer.getvalue().strip() and assigned_vars:
-                        for var in assigned_vars:
-                            value = self.locals.get(var, 'Undefined')
-                            print(f"{var} = {repr(value)}")
-                    elif not buffer.getvalue().strip():
-                        # If no output and no assigned vars, print 'None'
-                        print('None')
-        except Exception as e:
-            # Capture any exceptions raised during execution
-            return f"Error: {e}"
-        # Retrieve the captured output from stdout
-        output = buffer.getvalue().strip()
-        return output
-
-
+from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
+from avahiplatform.helpers.connectors.utils import PythonASTREPL
+from avahiplatform.helpers.connectors.s3_helper import S3Helper
+from .Observability import track_observability
 
 class QueryCSV:
-    def __init__(self, default_model_name='sonnet-3', aws_access_key_id=None,
-                 aws_secret_access_key=None, region_name=None):
-        self.region_name = region_name
-        self.default_model_name = default_model_name
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
-        self.bedrock = self._get_bedrock_client()
+    def __init__(self, 
+                bedrockchat: BedrockChat,
+                s3_helper: S3Helper
+                ):
+        
+        self.bedrockchat = bedrockchat
+        self.s3_helper = s3_helper
 
-    def _get_bedrock_client(self):
-        try:
-            if self.aws_access_key_id and self.aws_secret_access_key:
-                logger.info("Using provided AWS credentials for authentication.")
-                session = boto3.Session(
-                    aws_access_key_id=self.aws_access_key_id,
-                    aws_secret_access_key=self.aws_secret_access_key,
-                    region_name=self.region_name
-                )
-                return session.client(service_name="bedrock-runtime")
-            else:
-                logger.info("No explicit credentials provided. Attempting to use default credentials.")
-                return boto3.client(service_name="bedrock-runtime", region_name=self.region_name)
-        except botocore.exceptions.NoCredentialsError:
-            logger.error("No AWS credentials found. Please provide credentials or configure your environment.")
-            raise ValueError(
-                "AWS credentials are required. Please provide aws_access_key_id and aws_secret_access_key or configure your environment with AWS credentials.")
-        except Exception as e:
-            logger.error(f"Error setting up Bedrock client: {str(e)}")
-            raise
+    def query_data(
+        self, 
+        query: str, 
+        dataframes: Dict[str, pd.DataFrame],
+        stream: bool = False
+    ) -> dict:
+        """
+        Executes the data query by interacting with BedrockChat in two phases.
 
-    def model_invoke(self, query, dataframes, model_name=None, user_prompt=None, max_retries=15, initial_delay=2):
-        if model_name is None:
-            model_name = self.default_model_name
-        model_id, _, _ = self._get_model_details(model_name)
-        retries = 0
-        while retries < max_retries:
-            try:
-                query_result = self._execute_query(query, dataframes, model_id, user_prompt)
-                logger.info(f"query output: {query_result}")
-                result = self._generate_answer(query, query_result, model_id, user_prompt)
-                return result
-            except self.bedrock.exceptions.ThrottlingException as e:
-                retries += 1
-                wait_time = initial_delay * (2 ** (retries - 1))  # Exponential backoff
-                logger.warning(f"Service is being throttled. Retrying in {wait_time} seconds...")
-                time.sleep(wait_time)
-            except Exception as e:
-                user_friendly_error = self._get_user_friendly_error(e)
-                logger.error(user_friendly_error)
-                break
-        return None
+        Args:
+            query (str): The user-provided query.
+            dataframes (Dict[str, pd.DataFrame]): A dictionary of pandas DataFrames.
+            user_prompt (Optional[str]): An optional user prompt to guide the model.
+            stream (bool): Whether to use streaming for responses.
 
-    def _execute_query(self, query, dataframes, model_id, user_prompt):
+        Returns:
+            Tuple[str, float, float, float]: A tuple containing the final human-readable answer,
+                                             input token cost, output token cost, and total cost.
+        """
+        if not query or not dataframes:
+            raise ValueError("Incomplete input. Please provide a query and dataframes.")
+
+        # Phase 1: Generate Python code to answer the query
+        python_code = self._generate_python_code(query, dataframes, stream)
+        assistant_message = python_code["response_text"]
+
+        # Execute the generated Python code
+        python_repl = PythonASTREPL(dataframes=dataframes)
+        execution_result = python_repl.run(assistant_message)
+        
+        # Phase 2: Generate a human-readable answer from the execution result
+        human_readable_answer = self._generate_human_readable_answer(query, execution_result, stream)
+        
+        return human_readable_answer
+
+    @track_observability
+    def _generate_python_code(
+        self, 
+        query: str, 
+        dataframes: Dict[str, pd.DataFrame],
+        stream: bool
+    ) -> dict:
+        """
+        Phase 1: Generates Python code by interacting with BedrockChat.
+
+        Args:
+            query (str): The user-provided query.
+            dataframes (Dict[str, pd.DataFrame]): A dictionary of pandas DataFrames.
+            stream (bool): Whether to use streaming for responses.
+
+        Returns:
+            str: The generated Python code.
+        """
         system_message = """
-        You are an senior python developer tasked with analyzing data in a pandas DataFrame and generate a correct python code for that.
-        - Analyze the dataframes which USER provides and then write the code.
-        - Always assume dataframe will be given, so please dont create new dataframe.
-        - Strictly remember that syntax should be always correct of your code
-        - Do not import data (i.e., no read_csv statements or create any dataframe).
-        - Dont use print statement to return the output in the console, unless or until you want to convey some message.
+        You are a senior Python developer tasked with analyzing data in a pandas DataFrame and generating correct Python code for that.
+        - Analyze the DataFrames which USER provides and then write the code.
+        - Always assume DataFrame will be given, so please don't create a new DataFrame.
+        - Strictly remember that the syntax should always be correct in your code.
+        - Do not import data (i.e., no read_csv statements or creating any DataFrame).
+        - Don't use print statements to return output in the console unless conveying a message.
         - Don't add unnecessary filters.
         - Keep it simple.
-        - Make sure the input data for the python commands has the correct data value for it's proper usage.
-        - If you're unsure about something, say so and explain why.
-        - import seaborn like: import seaborn as sns; if needed then only
-        - For comparison purposes, always use values such as int, float or string. Never use pandas objects.
+        - Make sure the input data for the Python commands has the correct data values for proper usage.
+        - If unsure about something, say so and explain why.
+        - Import seaborn like: import seaborn as sns; if needed, then only.
+        - For comparison purposes, always use values such as int, float, or string. Never use pandas objects.
         - Unless prompted to do so, never use plots.
         - Always keep the labels for groupby operations.
-        - Write python commands only and no other instructions.
+        - Write Python commands only and no other instructions.
         """
-
+        
         df_info = {name: df.info(verbose=False, show_counts=False) for name, df in dataframes.items()}
         df_head = {name: df.head().to_string() for name, df in dataframes.items()}
         df_dtypes = {name: df.dtypes.to_string() for name, df in dataframes.items()}
@@ -161,151 +95,69 @@ class QueryCSV:
                And here are the data types of the columns:
                {df_dtypes}
                My question is: {query}
-               Please provide a python code for a given DataFrames to generate the answer for the question asked, without including any explanation.
+               Please provide Python code for the given DataFrames to generate the answer without including any explanation.
                """
 
-        prompt = user_prompt if user_prompt else f""" SYSTEM: {system_message} USER: {user_message} """
+        prompt = f"""SYSTEM: {system_message}\nUSER: {user_message}"""
 
-        messages = [
-            {"role": "user", "content": [{"type": "text", "text": prompt}]}
-        ]
+        if stream:
+            return self.bedrockchat.invoke_stream_parsed(prompt)
+        else:
+            return self.bedrockchat.invoke(prompt)
 
-        response = self.bedrock.invoke_model(
-            modelId=model_id,
-            contentType="application/json",
-            accept="application/json",
-            body=json.dumps({
-                "messages": messages,
-                "temperature": 0.5,
-                "max_tokens": 4096,
-                "anthropic_version": "bedrock-2023-05-31"
-            })
-        )
+    @track_observability
+    def _generate_human_readable_answer(
+        self, 
+        query: str, 
+        execution_result: str,
+        stream: bool
+    ) -> dict:
+        """
+        Phase 2: Generates a human-readable answer based on the execution result.
 
-        response_body = json.loads(response['body'].read())
-        assistant_message = response_body['content'][0]['text']
-        logger.info(f"assistant_message: {assistant_message}")
+        Args:
+            query (str): The original user query.
+            execution_result (str): The result of executing the Python code.
+            stream (bool): Whether to use streaming for responses.
 
-        python_repl = PythonASTREPL(dataframes=dataframes)
-        answer = python_repl.run(assistant_message)
-
-        return answer
-
-    def _generate_answer(self, query, query_result, model_id, user_prompt):
+        Returns:
+            Tuple[str, float, float, float]: A tuple containing the final human-readable answer,
+                                             input token cost, output token cost, and total cost.
+        """
         system_message = """
-                    - Given an <Answer> and a user <Query>, respond directly using only the information from <Answer>.
-                    - Format the <Answer> clearly and human-readably in your response, using bullet points if there are multiple answers.
-                    - Answer like an expert Data Analyst; give a brief explanation of your answers and add the values that support these claims.
-                    - Use natural human responses, don't use 'Based on the data....'
-                """
-
-        user_message = f"""
-        Answer: {query_result}
-        Query: {query}
-        
-        So the Context is the Answer for the Query user asked, but now you have to give answer in proper sentence.
+        - Given an <Answer> and a user <Query>, respond directly using only the information from <Answer>.
+        - Format the <Answer> clearly and human-readably in your response, using bullet points if there are multiple answers.
+        - Answer like an expert Data Analyst; give a brief explanation of your answers and add the values that support these claims.
+        - Use natural human responses; don't use 'Based on the data...'.
         """
 
-        prompt = user_prompt if user_prompt else f""" SYSTEM: {system_message} USER: {user_message} """
+        user_message = f"""
+        Answer: {execution_result}
+        Query: {query}
+        """
 
-        messages = [
-            {"role": "user", "content": [{"type": "text", "text": prompt}]}
-        ]
+        prompt = f"""SYSTEM: {system_message}\nUSER: {user_message}"""
 
-        response = self.bedrock.invoke_model(
-            modelId=model_id,
-            contentType="application/json",
-            accept="application/json",
-            body=json.dumps({
-                "messages": messages,
-                "temperature": 0,
-                "max_tokens": 4096,
-                "anthropic_version": "bedrock-2023-05-31"
-            })
-        )
-
-        response_body = json.loads(response['body'].read())
-        answer = response_body['content'][0]['text']
-        # logger.info(f"Final answer: {answer}")
-
-        return answer
-
-    def _get_model_details(self, model_name):
-        if model_name.lower() == "sonnet-3.5":
-            model_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
-            input_cost = 0.003
-            output_cost = 0.015
-        elif model_name.lower() == "sonnet-3":
-            model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
-            input_cost = 0.003
-            output_cost = 0.015
-        elif model_name.lower() == "haiku-3.0":
-            model_id = "anthropic.claude-3-haiku-20240307-v1:0"
-            input_cost = 0.00025
-            output_cost = 0.00125
+        if stream:
+            return self.bedrockchat.invoke_stream_parsed(prompt)
         else:
-            logger.error(f"Unrecognized model name: {model_name}")
-            raise ValueError(f"Unrecognized model name: {model_name}")
+            return self.bedrockchat.invoke(prompt)
 
-        logger.info(f"Using model: {model_id}")
-        return model_id, input_cost, output_cost
-
-    def query_from_local_paths(self, user_query, csv_file_paths, model_name=None, user_prompt=None):
+    def query_from_file(self, query: str, csv_file_paths: dict, stream: bool = False) -> dict:
+        """
+        Query data from a file.
+        """
         dataframes = {}
-        try:
-            for name, path in csv_file_paths.items():
-                df = pd.read_csv(str(path))
-                dataframes[name] = df
-        except Exception as e:
-            user_friendly_error = self._get_user_friendly_error(e)
-            logger.error(user_friendly_error)
-            raise ValueError(user_friendly_error)
-        return self.model_invoke(user_query, dataframes, model_name, user_prompt)
+        for name, path in csv_file_paths.items():
+            df = pd.read_csv(str(path))
+            dataframes[name] = df
 
-    def query_from_s3_paths(self, user_query, s3_file_paths, model_name=None, user_prompt=None):
-        s3 = boto3.client('s3')
-        dataframes = {}
-        for name, s3_file_path in s3_file_paths.items():
-            bucket_name, key_name = self._parse_s3_path(s3_file_path)
-            try:
-                logger.info(f"Fetching file from S3: {s3_file_path}")
-                response = s3.get_object(Bucket=bucket_name, Key=key_name)
-                content_type = response['ContentType']
-                body = response['Body'].read()
-                _, file_extension = os.path.splitext(key_name)
-                if content_type == 'text/csv' or file_extension.lower() == '.csv':
-                    dataframes[name] = pd.read_csv(io.StringIO(body.decode('utf-8')))
-                else:
-                    logger.error(f"Unsupported content type: {content_type}. Expected 'text/csv'.")
-                    raise ValueError(f"Unsupported content type: {content_type}. Expected 'text/csv'.")
-            except s3.exceptions.NoSuchKey:
-                logger.error(f"The file {s3_file_path} does not exist in the S3 bucket. Please check the S3 file path.")
-                raise ValueError(
-                    f"The file {s3_file_path} does not exist in the S3 bucket. Please check the S3 file path.")
-            except s3.exceptions.NoSuchBucket:
-                logger.error(f"The S3 bucket does not exist. Please check the bucket name in the S3 file path.")
-                raise ValueError(f"The S3 bucket does not exist. Please check the bucket name in the S3 file path.")
-            except Exception as e:
-                user_friendly_error = self._get_user_friendly_error(e)
-                logger.error(user_friendly_error)
-                raise ValueError(user_friendly_error)
-        return self.model_invoke(user_query, dataframes, model_name, user_prompt)
+        return self.query_data(query, dataframes, stream)
+    
+    def query_from_s3(self, query: str, s3_file_paths: dict, stream: bool = False) -> dict:
+        """
+        Query data from S3.
+        """
+        dataframes = self.s3_helper.fetch_csv_files(s3_file_paths)
 
-    def _parse_s3_path(self, s3_file_path):
-        if not s3_file_path.startswith('s3://'):
-            logger.error("S3 path should start with 's3://'. Please check the S3 file path.")
-            raise ValueError("S3 path should start with 's3://'. Please check the S3 file path.")
-        parts = s3_file_path[5:].split('/', 1)
-        if len(parts) != 2:
-            logger.error("Invalid S3 path format. It should be 's3://bucket_name/key_name'.")
-            raise ValueError("Invalid S3 path format. It should be 's3://bucket_name/key_name'.")
-        return parts[0], parts[1]
-
-    def _get_user_friendly_error(self, error):
-        # Customize user-friendly error messages here
-        if isinstance(error, ValueError):
-            return str(error)
-        elif isinstance(error, botocore.exceptions.BotoCoreError):
-            return "An error occurred with the AWS service. Please check your AWS resources and permissions."
-        else:
-            return f"An unexpected error occurred: {str(error)}."
+        return self.query_data(query, dataframes, stream)

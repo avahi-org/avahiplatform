@@ -1,42 +1,124 @@
-import os
 from loguru import logger
-from .helpers.utils import Utils
-from .helpers.bedrock_helper import BedrockHelper
+from typing import Optional, Union, Dict, Any
+from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
 
 
 class BedrockSummarizer:
-    def __init__(self, bedrock_helper: BedrockHelper):
-        self.bedrock_helper = bedrock_helper
+    def __init__(self, 
+                 bedrockchat: BedrockChat):
+        """
+        Initialize the BedrockSummarizer with BedrockChat instance.
+        
+        Args:
+            bedrockchat: BedrockChat instance for making API calls
+        """
+        self.bedrockchat = bedrockchat
+        
+        # Default system prompts for different types of content
+        self.default_prompts = {
+            "text": "Please provide a comprehensive summary of the following text, highlighting the key points and main ideas:",
+            "document": "Please analyze this document and provide a detailed summary, including key points, main arguments, and important conclusions:",
+            "s3_document": "Please analyze this document and provide a detailed summary, including key points, main arguments, and important conclusions:",
+            "image": "Please describe this image in detail and provide a comprehensive analysis of its content, including any notable elements, themes, or patterns:",
+            "video": "Please analyze this video content and provide a detailed summary of its key scenes, main message, and notable elements:"
+        }
 
-    def summarize_text(self, text, user_prompt=None, model_name=None):
-        if not text:
-            logger.error("Input text cannot be empty.")
-            raise ValueError("Input text cannot be empty.")
-
-        prompt = user_prompt if user_prompt else f"Please summarize the following text: {
-            text}"
-        return self.bedrock_helper.model_invoke(prompt, model_name)
-
-    def summarize_file(self, file_path, user_prompt=None, model_name=None):
-        if not os.path.exists(file_path):
-            logger.error(f"The file at {
-                         file_path} does not exist. Please check the file path.")
-            raise ValueError(
-                f"The file at {file_path} does not exist. Please check the file path.")
-
-        _, file_extension = os.path.splitext(file_path)
-        logger.info(f"Processing file: {file_path}")
-        if file_extension.lower() == '.pdf':
-            text = Utils.read_pdf(file_path)
-        elif file_extension.lower() == '.docx':
-            text = Utils.read_docx(file_path)
+    def _create_prompt_list(self, content_type: str, content: Union[str, bytes], system_prompt: Optional[str] = None) -> list:
+        """
+        Creates a list of prompts for the BedrockChat API.
+        
+        Args:
+            content_type: Type of content ('text', 'document', 'image', 'video', 's3_document')
+            content: The actual content or path to content
+            system_prompt: Optional custom system prompt
+            
+        Returns:
+            list: List of prompts formatted for BedrockChat
+        """
+        if not system_prompt:
+            system_prompt = self.default_prompts.get(content_type, self.default_prompts["text"])
+        
+        if content_type == "text":
+            prompts = [
+                {"text": f"System prompt: {system_prompt} \n User: {content}"}
+            ]
         else:
-            with open(file_path, 'r', encoding="utf-8") as file:  # Explicitly setting encoding
-                text = file.read()
+            prompts = [
+                {"text": system_prompt},
+                {content_type: content}
+            ]
+        return prompts
 
-        return self.summarize_text(text, user_prompt, model_name)
+    def summarize(self, 
+                 content_type: str,
+                 content: Union[str, bytes],
+                 system_prompt: Optional[str] = None,
+                 stream: bool = False) -> Dict[str, Any]:
+        """
+        Summarize content using the Bedrock model.
+        
+        Args:
+            content_type: Type of content ('text', 'document', 'image', 'video', 's3_document')
+            content: The content to summarize (can be text, file path, or S3 path)
+            system_prompt: Optional custom system prompt
+            stream: Whether to stream the response
+            
+        Returns:
+            dict: Response containing summary and metadata
+        """
+        try:
+            prompts = self._create_prompt_list(content_type, content, system_prompt)
+            
+            if stream:
+                return self.bedrockchat.invoke_stream_parsed(prompts)
+            else:
+                return self.bedrockchat.invoke(prompts)
+                
+        except Exception as e:
+            logger.error(f"Error in summarization: {str(e)}")
+            raise
 
-    def summarize_s3_file(self, s3_file_path, user_prompt=None, model_name=None):
-        text = Utils.read_s3_file(s3_file_path=s3_file_path)
+    def summarize_text(self, 
+                      text: str, 
+                      system_prompt: Optional[str] = None,
+                      stream: bool = False) -> Dict[str, Any]:
+        """
+        Summarize text content.
+        """
+        return self.summarize("text", text, system_prompt, stream)
 
-        return self.summarize_text(text, user_prompt, model_name)
+    def summarize_document(self, 
+                         document_path: str,
+                         system_prompt: Optional[str] = None,
+                         stream: bool = False) -> Dict[str, Any]:
+        """
+        Summarize a document file.
+        """
+        return self.summarize("document", document_path, system_prompt, stream)
+
+    def summarize_image(self, 
+                       image_path: str,
+                       system_prompt: Optional[str] = None,
+                       stream: bool = False) -> Dict[str, Any]:
+        """
+        Analyze and summarize an image.
+        """
+        return self.summarize("image", image_path, system_prompt, stream)
+
+    def summarize_video(self, 
+                       video_path: str,
+                       system_prompt: Optional[str] = None,
+                       stream: bool = False) -> Dict[str, Any]:
+        """
+        Analyze and summarize a video.
+        """
+        return self.summarize("video", video_path, system_prompt, stream)
+
+    def summarize_s3_document(self, 
+                            s3_path: str,
+                            system_prompt: Optional[str] = None,
+                            stream: bool = False) -> Dict[str, Any]:
+        """
+        Summarize a document stored in S3.
+        """
+        return self.summarize("s3_document", s3_path, system_prompt, stream)

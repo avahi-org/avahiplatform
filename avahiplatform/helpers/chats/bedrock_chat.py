@@ -1,8 +1,9 @@
 import time
 import json
-import boto3
 import os
-from .base_chat import BaseChat 
+from .base_chat import BaseChat
+from avahiplatform.helpers.connectors.s3_helper import S3Helper
+
 
 class BedrockChat(BaseChat):
     """
@@ -21,27 +22,22 @@ class BedrockChat(BaseChat):
         output_tokens_price (float): Price per 1,000 output tokens
     """
     def __init__(self, 
-                 model_id, 
+                 model_id,
+                 boto_helper,
                  max_tokens=512, 
                  temperature=0.6, 
                  p=0.5,
-                 region_name=None,
-                 aws_access_key_id=None,
-                 aws_secret_access_key=None,
-                 aws_session_token=None,
                  input_tokens_price=None,
                  output_tokens_price=None):
         """
         Initializes the BedrockChat with the specified model ID, parameters, and optional custom prices.
         """
         self.model_id = model_id
+        self.boto_helper = boto_helper
+
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.p = p
-        self.region_name = region_name
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
-        self.aws_session_token = aws_session_token
 
         # Get model name
         self.model_details = self._get_model_details()
@@ -62,7 +58,9 @@ class BedrockChat(BaseChat):
         )
 
         # Create Bedrock client
-        self.bedrock = self._create_client()
+        self.bedrock = self.boto_helper(service_name="bedrock-runtime")
+        self.s3_client = self.boto_helper(service_name="s3")
+        self.s3_helper = S3Helper(s3_client=self.s3_client)
 
     def _load_default_pricing(self):
         """
@@ -86,22 +84,6 @@ class BedrockChat(BaseChat):
             # Fallback: return empty dict if JSON is malformed
             return {}
 
-    def _create_client(self):
-        """
-        Creates the Bedrock client for invoking the language model.
-
-        Returns:
-            boto3.client: A boto3 client for Bedrock runtime service.
-        """
-        bedrock_client = boto3.client(
-            service_name="bedrock-runtime",
-            region_name=self.region_name,
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key,
-            aws_session_token=self.aws_session_token
-        )
-        return bedrock_client
-
     def _get_model_details(self):
         """
         Retrieves detailed information about the foundation model using the Bedrock (non-runtime) service.
@@ -110,13 +92,7 @@ class BedrockChat(BaseChat):
             dict: The model details retrieved from the Bedrock service.
         """
         # Create a separate client for the Bedrock control plane (non-runtime) API
-        bedrock_control_client = boto3.client(
-            service_name='bedrock',
-            region_name=self.region_name,
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key,
-            aws_session_token=self.aws_session_token
-        )
+        bedrock_control_client = self.boto_helper(service_name="bedrock")
         try:
             if self.model_id.startswith("us."):
                 model_id = self.model_id.split("us.")[1]
@@ -187,6 +163,21 @@ class BedrockChat(BaseChat):
                         }
                     }
                 }
+            elif "s3_document" in prompt:
+                # Document prompt
+                doc_name = "document"
+                # doc_format = self._get_file_format(prompt["document"])
+                if isinstance(prompt["s3_document"], str):
+                    doc_bytes = self.s3_helper.read_s3_file(prompt["s3_document"])
+                message = {
+                    "document": {
+                        # "format": doc_format,
+                        "name": doc_name,
+                        "source": {
+                            "bytes": doc_bytes
+                        }
+                    }
+                }
             elif "video" in prompt:
                 # Video prompt
                 video_format = self._get_file_format(prompt["video"])
@@ -204,7 +195,7 @@ class BedrockChat(BaseChat):
                 }
             else:
                 raise ValueError(
-                    "Invalid prompt. Each prompt must include one of: 'text', 'image', 'document', or 'video'."
+                    "Invalid prompt. Each prompt must include one of: 'text', 'image', 's3_document', 'document', or 'video'."
                 )
             messages.append(message)
         # The Bedrock API expects the conversation in a list with role/content
