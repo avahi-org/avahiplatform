@@ -4,57 +4,66 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import avahiplatform
 # You can configure you want
-avahiplatform.configure(iam_arn_for_medical_scribing="IAM role arn", input_bucket_name_for_medical_scribing="bucket name")
+# avahiplatform.configure(iam_arn_for_medical_scribing="IAM role arn", input_bucket_name_for_medical_scribing="bucket name")
+avahiplatform.configure(default_model_name='amazon.nova-pro-v1:0')
 
-# avahiplatform.initialize_observability(metrics_file='./metrics.jsonl', start_prometheus=True, prometheus_port=8007)
-# avahiplatform.summarize.create_url()
-#
+
+avahiplatform.initialize_observability(metrics_file='./metrics.jsonl', start_prometheus=True, prometheus_port=8007)
+avahiplatform.summarize.create_url()
+
 # chatbot = avahiplatform.chatbot
 # chatbot.launch_chat_ui()
-#
-#
-# # Generate URL for csv_query
-# avahiplatform.query_csv.create_url()
-# csv_files = {
-#     "df1": "./Test/df1.csv",
-#     "df2": "./Test/df2.csv"
-# }
-# # In the `csv_files` dictionary, you can pass any number of CSV files 1 or more than 1, but they must follow the structure where the key is the name and the value is the path(s3_path or local_path).
-# csv_query_answer = avahiplatform.query_csv("How many entries are there in df1?",
-#                                            csv_file_paths=csv_files)
-# print(f"csv query answer: {csv_query_answer}")
+chatbot = avahiplatform.chatbot
+chatbot.initialize_system(system_prompt="You are a Python developer. You only answer queries related to Python. If you receive any other queries, please respond with 'I don't know.'")
 
-# try:
-#     output = avahiplatform.summarize_document(
-#         document_path='./Test/df1.csv'
-#     )
-#     print(f"output: {output['response_text']}")
-# except Exception as e:
-#     print(f"Error occurred: {str(e)}")
+# Chat with the chatbot
+response = chatbot.chat(user_input="Create me a function to add 2 numbers")
+print(f"Chatbot Response: {response["response_text"]}")
 
-# try:
-#     output = avahiplatform.summarize_s3_document(
-#         s3_path='s3://avahi-python-package-data/summarize.docx'
-#     )
-#     print(f"output: {output['response_text']}")
-# except Exception as e:
-#     print(f"Error occurred: {str(e)}")
 
-# try:
-#     output = avahiplatform.summarize_image(
-#         image_path='./Test/041_400NB_Ramp_to_Glenridge_Conn_2024-09-13T17-30-20.340+00-00.jpg'
-#     )
-#     print(f"output: {output['response_text']}")
-# except Exception as e:
-#     print(f"Error occurred: {str(e)}")
+# Generate URL for csv_query
+avahiplatform.query_csv.create_url()
+csv_files = {
+    "df1": "./Test/df1.csv",
+    "df2": "./Test/df2.csv"
+}
+# In the `csv_files` dictionary, you can pass any number of CSV files 1 or more than 1, but they must follow the structure where the key is the name and the value is the path(s3_path or local_path).
+csv_query_answer = avahiplatform.query_csv("How many entries are there in df1?",
+                                           csv_file_paths=csv_files)
+print(f"csv query answer: {csv_query_answer}")
 
-# try:
-#     output = avahiplatform.summarize_video(
-#         video_path="./Test/SampleVideo_1280x720_2mb.mp4"
-#     )
-#     print(f"output: {output['response_text']}")
-# except Exception as e:
-#     print(f"Error occurred: {str(e)}")
+try:
+    output = avahiplatform.summarize_document(
+        document_path='./Test/df1.csv'
+    )
+    print(f"output: {output['response_text']}")
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
+
+try:
+    output = avahiplatform.summarize_s3_document(
+        s3_path='s3://avahi-python-package-data/summarize.docx'
+    )
+    print(f"output: {output['response_text']}")
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
+
+try:
+    output = avahiplatform.summarize_image(
+        image_path='./Test/041_400NB_Ramp_to_Glenridge_Conn_2024-09-13T17-30-20.340+00-00.jpg'
+    )
+    print(f"output: {output['response_text']}")
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
+
+try:
+    output = avahiplatform.summarize_video(
+        video_path="./Test/bird_video.mp4", system_prompt="summarize the video"
+    )
+    print(f"output: {output['response_text']}")
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
+
 # article= """"**Apple Camp returns with free sessions for kids aged 6 to 10 years old**
 # *By Rich Demuro*
 # *(KTLA) -- Apple Camp is back in session, offering free workshops at Apple stores across the country. The theme this year: Exploring new worlds and telling stories inspired by kindness.*
@@ -74,36 +83,36 @@ avahiplatform.configure(iam_arn_for_medical_scribing="IAM role arn", input_bucke
 # *To sign up, visit apple.com/today.*
 # *Copyright 2023 Nexstar Media Inc. All rights reserved. This material may not be published, broadcast, rewritten, or redistributed.*"
 # """
-# try:
-#     output = avahiplatform.structredExtraction(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt"
-#     )
-#     print(f"output: {output['response_text']}")
-# except Exception as e:
-#     print(f"Error occurred: {str(e)}")
-# try:
-#     output = avahiplatform.mask_data(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt"
-#     )
-#     print(f"output: {output['response_text']}")
-# except Exception as e:
-#     print(f"Error occurred: {str(e)}")
-# try:
-#     output = avahiplatform.grammar_assistant(input_content="I in am english speaker and I like write a sentence english in. "
-#     )
-#     print(f"output: {output['response_text']}")
-# except Exception as e:
-#     print(f"Error occurred: {str(e)}")
-# try:
-#     output = avahiplatform.product_description_assistant("SKU123", "Summer Sale", "Young Adults"
-#     )
-#     print(f"output: {output['response_text']}")
-# except Exception as e:
-#     print(f"Error occurred: {str(e)}")
-# try:
-#     output = avahiplatform.generate_icdcode(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt"
-#     )
-#     print(f"output: {output}")
-# except Exception as e:
-#     print(f"Error occurred: {str(e)}")
+try:
+    output = avahiplatform.structuredExtraction(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt"
+    )
+    print(f"output: {output['response_text']}")
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
+try:
+    output = avahiplatform.mask_data(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt"
+    )
+    print(f"output: {output['response_text']}")
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
+try:
+    output = avahiplatform.grammar_assistant(input_content="I in am english speaker and I like write a sentence english in. "
+    )
+    print(f"output: {output['response_text']}")
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
+try:
+    output = avahiplatform.product_description_assistant("SKU123", "Summer Sale", "Young Adults"
+    )
+    print(f"output: {output['response_text']}")
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
+try:
+    output = avahiplatform.generate_icdcode(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt"
+    )
+    print(f"output: {output}")
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
 
 try:
     output = avahiplatform.medicalscribing(audio_filepath="./Test/Doctor-patient-cost-of-care-conversation-from-ec2-deployed-api.mp3"

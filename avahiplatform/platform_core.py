@@ -139,7 +139,7 @@ class AvahiPlatform:
         self.medicalscribing = FunctionWrapper(self._medicalscribing)
         self.generate_icdcode = FunctionWrapper(self.icdcoding)
         self.query_csv = FunctionWrapper(self._query_csv)
-        self.structredExtraction = FunctionWrapper(self.structure_extraction)
+        self.extract_structures = FunctionWrapper(self.structure_extraction)
         self.mask_data = FunctionWrapper(self.data_masking)
         self.grammar_assistant = FunctionWrapper(self.grammar_correction)
         self.product_description_assistant = FunctionWrapper(self.product_description)
