@@ -489,6 +489,24 @@ You can install these dependencies using pip. We recommend using a virtual envir
 pip install -r requirements.txt
 ```
 
+## Contributors 🎉
+
+We would like to thank the following individuals for their valuable contributions:
+
+### Avahi Team Members:
+- **Abel Cotoñeto Padilla**
+- **Sergio Martinez**
+- **Nashita Khandaker**
+- **Diana Lopez**
+- **Shivangi Motwani**
+- **Urvish Patel**
+- **Amol Walnuj**
+- **Om Patel**
+- **Vivek Gohel**
+
+### AWS Team Member:
+- **Jon Turdiev**
+
 ## License 📄
 
 This project is licensed under the MIT License. See the [Open-source MIT license](https://opensource.org/licenses/MIT) file for details.
