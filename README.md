@@ -356,6 +356,7 @@ We're here to help! If you have any questions, suggestions, or just want to say 
 - Author: Avahi Tech
 - Email: info@avahitech.com
 - GitHub: [https://github.com/avahi-org/avahiplatform](https://github.com/avahi-org/avahiplatform)
+- Website: https://www.avahitech.com/
 
 ## Authors ✍️
 
