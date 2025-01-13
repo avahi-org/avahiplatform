@@ -1,4 +1,5 @@
-# avahiplatform
+# AvahiPlatform
+
 [![GitHub stars](https://img.shields.io/github/stars/avahi-org/avahiplatform)](https://star-history.com/#avahiplatform/avahiplatform)
 [![PyPI - License](https://img.shields.io/pypi/l/avahiplatform?style=flat-square)](https://opensource.org/licenses/MIT)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/avahiplatform?style=flat-square)](https://pypistats.org/packages/avahiplatform)
@@ -7,48 +8,49 @@
 
 ### Installation
 
-You can install avahiplatform by running:
+You can install AvahiPlatform by running:
 
 ```bash
 pip install avahiplatform
 ```
 
 ## Welcome to AvahiPlatform! 🚀
+
 Hey there, AI enthusiast! 👋 Are you ready to supercharge your Gen-AI projects? Look no further than AvahiPlatform - your new best friend in the world of Large Language Models (LLMs)!
 
 With AvahiPlatform, you can **create and deploy GenAI applications on Bedrock in just 60 seconds**. It's that fast and easy!
+
 ### What's AvahiPlatform all about?
+
 AvahiPlatform is not just a library; it's your ticket to effortless AI-powered applications. We've taken the complexity out of working with LLMs on AWS Bedrock, so you can focus on what really matters - bringing your brilliant ideas to life!
 
 ### Here's what makes AvahiPlatform special:
 
-- Simplicity at its core: With just a few lines of Python code, you'll be up and running. No PhD in AI required! 😉
-- AWS Bedrock integration: We've done the heavy lifting to seamlessly connect you with the power of AWS Bedrock. It's like having a direct line to AI goodness!
-- Enterprise-ready: Whether you're a solo developer or part of a large team, AvahiPlatform scales with your needs. From proof-of-concept to production, we've got you covered.
-- Python-friendly: If you can Python, you can AvahiPlatform. It's that simple!
-- Global Gradio URL: Quickly generate and share a URL to allow others to experience your functionality directly from your running environment.
-- Observability with metrics tracking and optional Prometheus integration 📊
+- **Simplicity at its core**: With just a few lines of Python code, you'll be up and running. No PhD in AI required! 😉
+- **AWS Bedrock integration**: We've done the heavy lifting to seamlessly connect you with the power of AWS Bedrock. It's like having a direct line to AI goodness!
+- **Enterprise-ready**: Whether you're a solo developer or part of a large team, AvahiPlatform scales with your needs. From proof-of-concept to production, we've got you covered.
+- **Python-friendly**: If you can Python, you can AvahiPlatform. It's that simple!
+- **Global Gradio URL**: Quickly generate and share a URL to allow others to experience your functionality directly from your running environment.
+- **Observability with metrics tracking and optional Prometheus integration** 📊
 
-## 🧱 What can you build with avahiplatform? 
+## 🧱 What can you build with AvahiPlatform?
 
-- Text summarization (plain text, local files, S3 files) 📝
-- Structured information extraction 🏗️
-- Data masking 🕵️‍♀️
-- Natural Language to SQL conversion 🗣️➡️💾
-- PDF summarization 📄
-- Grammar correction ✍️
-- Product description generation 🛍️
-- Image generation 🎨
-- Image similarity 🔍🖼️
-- Medical scribing 👩‍⚕️
-- ICD-10 code generation 🏥
-- CSV querying 📊
-- Retrieval-Augmented Generation (RaG) with Sources 🔍📚
-- Semantic Search 🔎💡
-- Chatbot 🤖
-- Global gradio URL for Any Functionality/Features 🌐
-- Support for custom prompts and different Anthropic Claude model versions 🧠
-- Error handling with user-friendly messages 🛠️
+- **Summarization** (plain text, local files, S3 files) 📝
+- **Image and Video Summarization** 📹
+- **Structured Information Extraction** 🏗️
+- **Data Masking** 🕵️‍♀️
+- **Grammar Correction** ✍️
+- **Product Description Generation** 🛍️
+- **ICD-10 Code Generation** 🏥
+- **Medical Scribing** 👩‍⚕️
+- **CSV Querying** 📊
+- **Natural Language to SQL Conversion** 🗣️➡️💾
+- **Retrieval-Augmented Generation (RaG) with Sources** 🔍📚
+- **Semantic Search** 🔎💡
+- **Chatbot** 🤖
+- **Global Gradio URL for Any Functionality/Features** 🌐
+- **Support for Custom Prompts and Different Anthropic Claude Model Versions** 🧠
+- **Error Handling with User-Friendly Messages** 🛠️
 
 ### Basic Usage
 
@@ -56,258 +58,406 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 
 With the provided Google Colab notebook, you can easily test and explore the features of this project. Simply click the "Open In Colab" badge above to get started!
 
-
 ```python
 import avahiplatform
+import os
+import sys
 
-# Initialize observability - You can access these metrics on specified prometheus_port, i.e in this case: 8000
-avahiplatform.initialize_observability(metrics_file='./metrics.jsonl', start_prometheus=True, prometheus_port=8000)
-# If you don't want to get prometheus metrics avahiplatform.initialize_observability(metrics_file='./metrics.jsonl', start_prometheus=True, prometheus_port=8000)
+# Add the parent directory of logicsdk to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Summarization - Text summarization (plain text, local files, S3 files) 📝
-summary, input_tokens, output_tokens, cost = avahiplatform.summarize("This is a test string to summarize.")
-print("Summary:", summary)
+# Configure AvahiPlatform
+avahiplatform.configure(default_model_name='amazon.nova-pro-v1:0')
+# You can pass all this configuration:                 aws_access_key_id, aws_secret_access_key, aws_session_token, region_name, input_tokens_price, output_tokens_price, input_bucket_name_for_medical_scribing, iam_arn_for_medical_scribing, default_model_name
+ 
 
-# Structured Extraction - Structured information extraction 🏗️
-extraction, input_tokens, output_tokens, cost = avahiplatform.structredExtraction("This is a test string for extraction.")
-print("Extraction:", extraction)
+# Initialize observability
+avahiplatform.initialize_observability(metrics_file='./metrics.jsonl', start_prometheus=True, prometheus_port=8007)
 
-# Data Masking - Data masking 🕵️‍♀️
-masked_data, input_tokens, output_tokens, cost = avahiplatform.DataMasking("This is a test string for Data Masking.")
-print("Masked Data:", masked_data)
+# Launch Chat UI
+chatbot = avahiplatform.chatbot
+chatbot.launch_chat_ui()
 
-# PDF Summarization - PDF summarization 📄
-summary, _, _, _ = avahiplatform.summarize("path/to/pdf/file.pdf")
-print("PDF Summary:", summary)
+# Summarize any document Example
+summary = avahiplatform.summarize_document(document_path='./Test/df1.csv')
+print("Summary:", summary['response_text'])
 
-# Grammar Correction - Grammar correction ✍️
-corrected_text, _, _, _ = avahiplatform.grammarAssistant("Text with grammatical errors")
-print("Corrected Text:", corrected_text)
+# Summarize text Example
+summary = avahiplatform.summarize_text(text="sameple text")
+print("Summary:", summary['response_text'])
 
-# Product Description Generation - Product description generation 🛍️
-description, _, _, _ = avahiplatform.productDescriptionAssistant("SKU123", "Summer Sale", "Young Adults")
-print("Product Description:", description)
+# Summarize s3 document Example
+summary = avahiplatform.summarize_s3_document(s3_path='s3://avahi-python-package-data/Patient’s clinical history.txt')
+print("Summary:", summary['response_text'])
 
-# Image Generation - Image generation 🎨
-image, seed, cost = avahiplatform.imageGeneration("A beautiful sunset over mountains")
-print("Generated Image:", image)
+# Summarize image Example
+summary = avahiplatform.summarize_image(image_path='./Test/041_400NB_Ramp_to_Glenridge_Conn_2024-09-13T17-30-20.340+00-00.jpg')
+print("Summary:", summary['response_text'])
 
-# Image similarity 🔍🖼️ 
-# It supports pil image, local path, s3 path in 1st argument
-# It supports pil image, local path, s3 path, folder_path, list of pil images in second argument
-similarity_score, cost = avahiplatform.imageSimilarity("ford_endeavour.jpeg", "ford_interior.jpeg")
-print("similarity_score:", similarity_score)
+# Summarize video Example
+summary = avahiplatform.summarize_video(video_path='./Test/041_400NB_Ramp_to_Glenridge_Conn_2024-09-13T17-30-20.340+00-00.mp4')
+print("Summary:", summary['response_text'])
 
-# Medical Scribing - Medical scribing 👩‍⚕️
-medical_summary, _ = avahiplatform.medicalscribing("path/to/audio.mp3", "input-bucket", "iam-arn")
+# Data Masking Example
+masked_data = avahiplatform.mask_data(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt")
+print("Masked Data:", masked_data['response_text'])
+
+# Structured Extraction Example
+extraction = avahiplatform.structuredExtraction(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt")
+print("Extraction:", extraction['response_text'])
+
+# Grammar Correction Example
+corrected_text = avahiplatform.grammar_assistant(input_content="I in am english speaker and I like write a sentence english in.")
+print("Corrected Text:", corrected_text['response_text'])
+
+# Product Description Generation Example
+description = avahiplatform.product_description_assistant("SKU123", "Summer Sale", "Young Adults")
+print("Product Description:", description['response_text'])
+
+# ICD-10 Code Generation Example
+icd_codes = avahiplatform.generate_icdcode(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt")
+print("ICD-10 Codes:", icd_codes)
+
+# Medical Scribing Example
+medical_summary = avahiplatform.medicalscribing(audio_filepath="./Test/Doctor-patient-conversation.mp3")
 print("Medical Summary:", medical_summary)
 
-# Icd10code Generation 🏥
-codes = avahiplatform.icdcoding("Any prescription or path/to/prescription.txt")
-print("Icd 10 codes:", codes)
-
-# CSV querying 📊
+# CSV Querying Example
 csv_files = {
-    "df1": "path/to/1st_csv.csv",
-    "df2": "path/to/2nd_csv.csv"
+    "df1": "./Test/df1.csv",
+    "df2": "./Test/df2.csv"
 }
-# In the `csv_files` dictionary, you can pass any number of CSV files 1 or more than 1, but they must follow the structure where the key is the name and the value is the path(s3_path or local_path).
-csv_query_answer = avahiplatform.query_csv("How many active locations are there in each region?",
-                                           csv_file_paths=csv_files)
-print(f"csv query answer: {csv_query_answer}")
-
-# RaG with Sources 🔍📚
-answer, sources = avahiplatform.perform_rag_with_sources("What is kafka?", s3_path="s3://your-bucket-path-where-doc-is-present/")
-print(f"Generated answer: {answer}")
-print(f"Retrieved sourcce: {sources}")
-
-# Semantic Search 🔎💡
-similar_docs = avahiplatform.perform_semantic_search("What is kafka?", s3_path="s3://your-bucket-path-where-doc-is-present/")
-print(f"similar docs: {similar_docs}")
-
-# Chatbot 🤖
---------------------------------
-chatbot = avahiplatform.chatbot()
-chatbot.initialize_instance(system_prompt="You are a python developer, you only answer queries related to python only, if you get any other queries, then please say I don't know")
-chatbot_response = chatbot.chat(user_input="Create me a function to add 2 numbers")
-print(f"chatbot_response: {chatbot_response}")
-
-chatbot_response = chatbot.chat(user_input="What is avahi?")
-print(f"chatbot_response: {chatbot_response}")
-
-# Get chat history
-chatbot_history = chatbot.get_history()
-print(chatbot_history)
-
-# clear_chat_history
-chatbot.clear_history()
----------------------------------------
-
-# Few examples for getting global gradio URL for Any Functionality/Features 🌐
-
-# For summarizer
-avahiplatform.summarize.create_url()
-
-# For medical-scribing
-avahiplatform.medicalscribing.create_url()
-
-# For csv querying
-avahiplatform.query_csv.create_url()
-
-# For RAG with sources
-avahiplatform.perform_rag_with_sources.create_url()
-
-# For chatbot we first have initialize chatbot and then we can create the url
-chatbot = avahiplatform.chatbot()
-chatbot.create_url()
-
-# This will generate a global URL which you can share with anyone, allowing them to explore and utilize any of the features which is running in your environment using avahiplatform sdk
+csv_query_answer = avahiplatform.query_csv("How many entries are there in df1?", csv_file_paths=csv_files)
+print(f"CSV Query Answer: {csv_query_answer}")
 ```
+
+## Features
+
+### Summarization
+
+- **Text Summarization**: Summarize plain text, local files, or files stored in S3.
+- **Image and Video Summarization**: Generate summaries for images and videos.
+
+### Structured Information Extraction
+
+Extract structured data from unstructured text sources.
+
+### Data Masking
+
+Protect sensitive information by masking data in your datasets.
+
+### Grammar Correction
+
+Automatically correct grammatical errors in your text.
+
+### Product Description Generation
+
+Generate compelling product descriptions based on SKU, campaign, and target audience.
+
+### ICD-10 Code Generation
+
+Generate ICD-10 codes from clinical documents.
+
+### Medical Scribing
+
+Transcribe and summarize medical conversations from audio files.
+
+### CSV Querying
+
+Perform natural language queries on your CSV files.
+
+### Retrieval-Augmented Generation (RaG) with Sources
+
+Enhance your generation tasks with retrieval from external sources.
+
+### Semantic Search
+
+Perform semantic searches to find relevant documents or information.
+
+### Chatbot
+
+Deploy interactive chatbots with customizable prompts and behaviors.
+
+### Global Gradio URL for Any Functionality/Features
+
+Generate shareable URLs for any of your deployed functionalities.
+
+### Support for Custom Prompts and Different Anthropic Claude Model Versions
+
+Customize prompts and choose from various Anthropic Claude model versions.
+
+### Error Handling with User-Friendly Messages
+
+Receive clear and actionable error messages for common issues.
 
 ## Configuration
 
 ### AWS Credentials Setup 🔐
+
 AvahiPlatform requires AWS credentials to access AWS Bedrock and S3 services. You have two options for providing your AWS credentials:
 
-Default AWS Credentials
-- Configure your AWS credentials in the ~/.aws/credentials file
-- Or use the AWS CLI to set up your credentials
+#### Default AWS Credentials
+- Configure your AWS credentials in the `~/.aws/credentials` file.
+- Or use the AWS CLI to set up your credentials.
 
-Explicit AWS Credentials
-- Pass the AWS Access Key ID and Secret Access Key directly when calling functions
+#### Explicit AWS Credentials
+- Pass the AWS Access Key ID and Secret Access Key directly when calling functions.
 
-💡 Tip: For detailed instructions on setting up AWS credentials, please refer to the [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
+💡 **Tip**: For detailed instructions on setting up AWS credentials, please refer to the [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
 
 Ensuring your AWS credentials are correctly set up will allow you to seamlessly use all of AvahiPlatform's powerful features. If you encounter any issues with authentication, double-check your credential configuration or reach out to our support team for assistance.
+
+### Additional Configuration
+
+You can configure additional settings such as IAM roles and input bucket names for specific features like medical scribing:
+
+```python
+avahiplatform.configure(
+    iam_arn_for_medical_scribing="IAM role arn",
+    input_bucket_name_for_medical_scribing="bucket name",
+    default_model_name='amazon.nova-pro-v1:0'
+)# Full configuration example with all available parameters
+avahiplatform.configure(
+	# AWS Credentials
+	aws_access_key_id="YOUR_ACCESS_KEY",          # AWS access key ID
+	aws_secret_access_key="YOUR_SECRET_KEY",      # AWS secret access key
+	aws_session_token="YOUR_SESSION_TOKEN",       # Optional: AWS session token
+	region_name="YOUR_REGION",                    # AWS region (e.g., 'us-east-1')
+	
+	# Token Pricing (Optional)
+	input_tokens_price=0.0,                       # Price per 1,000 input tokens
+	output_tokens_price=0.0,                      # Price per 1,000 output tokens
+	
+	# Medical Scribing Configuration
+	input_bucket_name_for_medical_scribing="YOUR_BUCKET_NAME",  # S3 bucket for medical scribing input
+	iam_arn_for_medical_scribing="YOUR_IAM_ARN",               # IAM role ARN for medical scribing
+	
+	# Model Configuration
+	default_model_name='anthropic.claude-3-sonnet-20240229-v1:0'  # Default model to use
+)
+```
+
 ## Usage Examples
 
 ### Summarization
 
 ```python
-# Summarize text
-summary, _, _, _ = avahiplatform.summarize("Text to summarize")
+import avahiplatform
+
+# Summarize plain text
+summary = avahiplatform.summarize_text(text="sample text")
+print("Summary:", summary['response_text'])
 
 # Summarize a local file
-summary, _, _, _ = avahiplatform.summarize("path/to/local/file.txt")
+summary = avahiplatform.summarize_document(document_path='path/to/local/file.txt')
+print("Summary:", summary['response_text'])
 
 # Summarize a file from S3
-summary, _, _, _ = avahiplatform.summarize("s3://bucket-name/file.txt", 
-                                            aws_access_key_id="your_access_key", 
-                                            aws_secret_access_key="your_secret_key")
+summary = avahiplatform.summarize_s3_document(s3_path='s3://bucket-name/file.txt')
+print("Summary:", summary['response_text'])
+
+# Summarize an image
+image_summary = avahiplatform.summarize_image(image_path='./Test/image.jpg')
+print("Image Summary:", image_summary['response_text'])
+
+# Summarize a video
+video_summary = avahiplatform.summarize_video(video_path='./Test/video.mp4', system_prompt="Summarize the video content.")
+print("Video Summary:", video_summary['response_text'])
 ```
 
-### Structured Extraction
+### Structured Information Extraction
 
 ```python
-extraction, _, _, _ = avahiplatform.structredExtraction("Text for extraction")
+extraction = avahiplatform.structuredExtraction(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt") # anything local path, plain text or s3 path
+print("Extraction:", extraction['response_text'])
 ```
 
 ### Data Masking
 
 ```python
-masked_data, _, _, _ = avahiplatform.DataMasking("Text containing sensitive information")
-```
-
-### Natural Language to SQL
-
-```python
-result = avahiplatform.nl2sql("Your natural language query", 
-                               db_type="postgresql", username="user", password="pass",
-                               host="localhost", port=5432, dbname="mydb")
-```
-
-### PDF Summarization
-
-```python
-summary, _, _, _ = avahiplatform.pdfsummarizer("path/to/file.pdf")
+masked_data = avahiplatform.mask_data(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt") # anything local path, plain text or s3 path
+print("Masked Data:", masked_data['response_text'])
 ```
 
 ### Grammar Correction
 
 ```python
-corrected_text, _, _, _ = avahiplatform.grammarAssistant("Text with grammatical errors")
+corrected_text = avahiplatform.grammar_assistant(input_content="I in am english speaker and I like write a sentence english in.") # plain text or s3 path
+print("Corrected Text:", corrected_text['response_text'])
 ```
 
 ### Product Description Generation
 
 ```python
-description, _, _, _ = avahiplatform.productDescriptionAssistant("SKU123", "Summer Sale", "Young Adults")
-```
-
-### Image Generation
-
-```python
-image, seed, cost = avahiplatform.imageGeneration("A beautiful sunset over mountains")
-```
-
-### Medical Scribing
-
-```python
-summary, transcript = avahiplatform.medicalscribing("path/to/audio.mp3", "input-bucket", "iam-arn")
-
-# Note in medical scribe in iam_arn: It should have iam pass role inline policy which should look like this:
-{
-	"Version": "2012-10-17",
-	"Statement": [
-		{
-			"Effect": "Allow",
-			"Action": [
-				"iam:GetRole",
-				"iam:PassRole"
-			],
-			"Resource": [
-				"arn:aws:iam::<account-id>:role/<role-name>"
-			]
-		}
-	]
-}
-
-Along with this, the role/user should have full access to both Transcribe and Comprehend.
+description = avahiplatform.product_description_assistant("SKU123", "Summer Sale", "Young Adults") # product name, season, target audience
+print("Product Description:", description['response_text'])
 ```
 
 ### ICD-10 Code Generation
 
 ```python
-icd_code = avahiplatform.icdcoding("local_file.txt")
+icd_codes = avahiplatform.generate_icdcode(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt") # anything local path, plain text or s3 path
+print("ICD-10 Codes:", icd_codes)
+```
+
+### Medical Scribing
+
+```python
+medical_summary = avahiplatform.medicalscribing(audio_filepath="./Test/Doctor-patient-conversation.mp3") 
+print("Medical Summary:", medical_summary)
 ```
 
 ### CSV Querying
 
 ```python
 csv_files = {
-    "df1": "path/to/1st_csv.csv",
-    "df2": "path/to/2nd_csv.csv"
+    "df1": "./Test/df1.csv",
+    "df2": "./Test/df2.csv"
 }
-# In the `csv_files` dictionary, you can pass any number of CSV files 1 or more than 1, but they must follow the structure where the key is the name and the value is the path(s3_path or local_path).
-csv_query_answer = avahiplatform.query_csv("<Your query goes here>",
-                                           csv_file_paths=csv_files)
-print(f"csv query answer: {csv_query_answer}")
+csv_query_answer = avahiplatform.query_csv("How many entries are there in df1?", csv_file_paths=csv_files) # local filepath or s3 path
+print(f"CSV Query Answer: {csv_query_answer}")
+```
+
+### Natural Language to SQL
+
+```python
+result = avahiplatform.nl2sql(
+    "Show me all users who signed up in the last month.",
+    db_type="postgresql",
+    username="user",
+    password="pass",
+    host="localhost",
+    port=5432,
+    dbname="mydb"
+)
+print("SQL Result:", result)
+```
+
+### Retrieval-Augmented Generation (RaG) with Sources
+
+```python
+answer, sources = avahiplatform.perform_rag_with_sources(
+    "What is Kafka?",
+    s3_path="s3://your-bucket-path-where-doc-is-present/"
+)
+print(f"Generated Answer: {answer}")
+print(f"Retrieved Sources: {sources}")
+```
+
+### Semantic Search
+
+```python
+similar_docs = avahiplatform.perform_semantic_search(
+    "What is Kafka?",
+    s3_path="s3://your-bucket-path-where-doc-is-present/"
+)
+print(f"Similar Documents: {similar_docs}")
+```
+
+### Chatbot
+
+```python
+chatbot = avahiplatform.chatbot
+chatbot.initialize_system(system_prompt="You are a Python developer. You only answer queries related to Python. If you receive any other queries, please respond with 'I don't know.'")
+
+# Chat with the chatbot
+response = chatbot.chat(user_input="Create me a function to add 2 numbers")
+print(f"Chatbot Response: {response["response_text"]}")
+
+response = chatbot.chat(user_input="What is Avahi?")
+print(f"Chatbot Response: {response["response_text"]}")
+
+# Get chat history
+history = chatbot.get_history()
+print(f"Chat History: {history}")
+
+# Clear chat history
+chatbot.clear_history()
 ```
 
 ### Global Gradio URL for Any Functionality/Features 🌐
 
 ```python
-avahiplatform.feature_name.create_url()
+# For Summarization
+avahiplatform.summarize_document.create_url()
 
-For example:
-- avahiplatform.summarize.create_url()
-- avahiplatform.medicalscribing.create_url()
-- avahiplatform.query_csv.create_url()
+# For Medical Scribing
+avahiplatform.medicalscribing.create_url()
 
-# For interactive chatbot
-chatbot = avahiplatform.chatbot()
+# For CSV Querying
+avahiplatform.query_csv.create_url()
+
+# For RaG with Sources
+avahiplatform.perform_rag_with_sources.create_url()
+
+# For Chatbot
+chatbot = avahiplatform.chatbot
 chatbot.create_url()
 ```
 
+This will generate a global URL which you can share with anyone, allowing them to explore and utilize any of the features running in your environment using the AvahiPlatform SDK.
+
+## Configuration
+
+### AWS Credentials Setup 🔐
+
+AvahiPlatform requires AWS credentials to access AWS Bedrock and S3 services. You have two options for providing your AWS credentials:
+
+#### Default AWS Credentials
+- Configure your AWS credentials in the `~/.aws/credentials` file.
+- Or use the AWS CLI to set up your credentials.
+
+#### Explicit AWS Credentials
+- Pass the AWS Access Key ID and Secret Access Key directly when calling functions.
+
+💡 **Tip**: For detailed instructions on setting up AWS credentials, please refer to the [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
+
+Ensuring your AWS credentials are correctly set up will allow you to seamlessly use all of AvahiPlatform's powerful features. If you encounter any issues with authentication, double-check your credential configuration or reach out to our support team for assistance.
+
+### Additional Configuration for Medical Scribing
+
+To use medical scribing features, configure the IAM role and input bucket name:
+
+```python
+avahiplatform.configure(
+    iam_arn_for_medical_scribing="arn:aws:iam::<account-id>:role/<role-name>",
+    input_bucket_name_for_medical_scribing="your-input-bucket-name",
+    default_model_name='amazon.nova-pro-v1:0'
+)
+```
+
+**IAM Policy for Medical Scribing:**
+
+Ensure the IAM role has the following inline policy:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:PassRole"
+            ],
+            "Resource": [
+                "arn:aws:iam::<account-id>:role/<role-name>"
+            ]
+        }
+    ]
+}
+```
+
+Additionally, the role/user should have full access to both **Transcribe** and **Comprehend** services.
 
 ## Error Handling 🛠️
 
 AvahiPlatform provides user-friendly error messages for common issues, ensuring you can quickly identify and resolve any problems. Here are some examples:
 
-- ❌ Invalid AWS credentials
-- 🔍 File not found
-- 🔌 Database connection errors
-- ⚠️ Unexpected errors
+- ❌ **Invalid AWS credentials**: Ensure your AWS credentials are correctly configured.
+- 🔍 **File not found**: Verify the file paths provided exist and are accessible.
+- 🔌 **Database connection errors**: Check your database credentials and network connectivity.
+- ⚠️ **Unexpected errors**: Review the error message and consult the documentation or support.
 
 Our detailed error messages will guide you towards quick resolutions, keeping your development process smooth and efficient.
 
@@ -315,19 +465,19 @@ Our detailed error messages will guide you towards quick resolutions, keeping yo
 
 To use AvahiPlatform, make sure you have the following:
 
-- Python 3.9 or higher
+- **Python 3.9 or higher**
 
 ### Required Libraries:
-```
-boto3==1.34.160
-python-docx==1.1.2
-PyMuPDF==1.24.9
-loguru==0.7.2
-setuptools==72.1.0
-chromadb==0.5.3
+
+```bash
+boto3>=1.34.160
+python-docx>=1.1.2
+PyMuPDF>=1.24.9
+loguru>=0.7.2
+setuptools>=72.1.0
 sqlalchemy>=2.0.35
 gradio>=4.44.0
-tabulate==0.9.0
+tabulate>=0.9.0
 python-magic-bin>=0.4.14
 pillow>=10.4.0
 pandas>=2.2.3
@@ -335,15 +485,9 @@ pandas>=2.2.3
 
 You can install these dependencies using pip. We recommend using a virtual environment for your project.
 
-## Contributing 🤝
-
-We welcome contributions from the community! Whether you've found a bug or have a feature in mind, we'd love to hear from you. Here's how you can contribute:
-
-1. Open an issue to discuss your ideas or report bugs
-2. Fork the repository and create a new branch for your feature
-3. Submit a pull request with your changes
-
-Let's make AvahiPlatform even better together!
+```bash
+pip install -r requirements.txt
+```
 
 ## Contributors 🎉
 
@@ -367,10 +511,38 @@ We would like to thank the following individuals for their valuable contribution
 
 This project is licensed under the MIT License. See the [Open-source MIT license](https://opensource.org/licenses/MIT) file for details.
 
+## Contributing 🤝
+
+We welcome contributions from the community! Whether you've found a bug or have a feature in mind, we'd love to hear from you. Here's how you can contribute:
+
+1. **Open an issue** to discuss your ideas or report bugs.
+2. **Fork the repository** and create a new branch for your feature.
+3. **Submit a pull request** with your changes.
+
+Let's make AvahiPlatform even better together!
+
 ## Contact Us 📬
 
 We're here to help! If you have any questions, suggestions, or just want to say hi, feel free to reach out:
 
-- Author: Avahi Tech
-- Email: info@avahitech.com
-- GitHub: [https://github.com/avahi-org/avahiplatform](https://github.com/avahi-org/avahiplatform)
+- **Author**: Avahi Tech
+- **Email**: [info@avahitech.com](mailto:info@avahitech.com)
+- **GitHub**: [https://github.com/avahi-org/avahiplatform](https://github.com/avahi-org/avahiplatform)
+
+## Authors ✍️
+
+Lead by [Dhruv Motwani](https://github.com/DhruvAvahi)
+
+**Contributors:**
+- [Abel Cotoneto Padilla](https://github.com/AbelCotonetoPadilla)
+- [Amol Dwalunj-Awahi](https://github.com/Amoldwalunj-awahi)
+- [Diana Avahitech](https://github.com/diana-avahitech)
+- [Jon Turdiev](https://github.com/JonTurdiev)
+- [Nashita K](https://github.com/nashitak)
+- [Om Avahi](https://github.com/om-avahi)
+- [Sergio Martinez](https://github.com/SergioMartinezAvahitech)
+- [Vivek Avahi](https://github.com/vivekavahi)
+
+---
+
+Thank you for choosing AvahiPlatform! We are excited to see the amazing applications you'll build.
