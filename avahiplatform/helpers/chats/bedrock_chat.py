@@ -175,12 +175,11 @@ class BedrockChat(BaseChat):
             elif "s3_document" in prompt:
                 # Document prompt
                 doc_name = "document"
-                # doc_format = self._get_file_format(prompt["document"])
                 if isinstance(prompt["s3_document"], str):
                     doc_bytes = self.s3_helper.read_s3_file(prompt["s3_document"])
                 message = {
                     "document": {
-                        # "format": doc_format,
+                        "format": "txt",
                         "name": doc_name,
                         "source": {
                             "bytes": doc_bytes

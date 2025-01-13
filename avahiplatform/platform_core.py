@@ -99,7 +99,8 @@ class AvahiPlatform:
             boto_helper=self.boto_helper,
             s3_helper=self.s3_helper,
             input_bucket_name=input_bucket_name_for_medical_scribing,
-            iam_arn=iam_arn_for_medical_scribing
+            iam_arn=iam_arn_for_medical_scribing,
+            region_name=self.region_name
         )
 
         self.natural_language_to_sql = BedrockNL2SQL(
@@ -153,7 +154,7 @@ class AvahiPlatform:
 
         # self.initialize_observability = self._initialize_observability
 
-
+    @track_observability
     def icdcoding(self, input_content):
         try:
             if os.path.exists(input_content):  # Check if input is a local file path
@@ -167,6 +168,7 @@ class AvahiPlatform:
             logger.error(user_friendly_error)
             return "None"
 
+    @track_observability
     def _medicalscribing(self, audio_filepath):
         try:
             if os.path.exists(audio_filepath):  # Check if input is a local file path
@@ -220,6 +222,7 @@ class AvahiPlatform:
             logger.error(user_friendly_error)
             return "None"
 
+    @track_observability
     def structure_extraction(self, input_content, system_prompt=None, stream=False):
         try:
             if os.path.exists(input_content):  # Check if input is a local file path
@@ -233,6 +236,7 @@ class AvahiPlatform:
             logger.error(user_friendly_error)
             return "None"
 
+    @track_observability
     def data_masking(self, input_content, system_prompt=None, stream=False):
         try:
             if os.path.exists(input_content):  # Check if input is a local file path
@@ -246,6 +250,7 @@ class AvahiPlatform:
             logger.error(user_friendly_error)
             return "None"
 
+    @track_observability
     def grammar_correction(self, input_content, system_prompt=None, stream=False):
         try:
             if os.path.exists(input_content):  # Check if input is a local file path
@@ -259,6 +264,7 @@ class AvahiPlatform:
             logger.error(user_friendly_error)
             return "None"
     
+    @track_observability
     def product_description(self, product_sku, event_name, customer_segmentation, system_prompt=None, stream=False):
         try:
             return self.productDescriptionAssistant.generate_product_description(product_sku, event_name, customer_segmentation, system_prompt, stream)
@@ -266,6 +272,7 @@ class AvahiPlatform:
             user_friendly_error = Utils.get_user_friendly_error(e)
             logger.error(user_friendly_error)
 
+    @track_observability
     def nlquery2sql(self, nl_query, db_type, username, password, host,
            port, dbname, db_path=None, user_prompt=None, stream=False):
         try:

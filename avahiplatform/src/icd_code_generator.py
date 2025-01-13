@@ -17,7 +17,8 @@ class ICDCodeGenerator:
             icd_entities = result['Entities']
             return json.dumps(icd_entities, indent=2)
         except Exception as ex:
-            return None
+            print(ex)
+            return "None"
 
     def generate_code_from_file(self, file_path):
         if not os.path.exists(file_path):

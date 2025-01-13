@@ -34,7 +34,7 @@ def configure(
 
 def _init_platform_exports():
     """Initialize all platform exports with the configured instance."""
-    global summarize_text, summarize_document, summarize_image, summarize_s3_document
+    global summarize_text, summarize_document, summarize_image, summarize_s3_document, summarize_video
     global structredExtraction, mask_data, grammar_assistant, product_description_assistant
     global nl2sql, query_csv, medicalscribing, generate_icdcode, chatbot, initialize_observability
     global _platform_instance  
@@ -47,6 +47,7 @@ def _init_platform_exports():
     summarize_document = _platform_instance.summarize_document
     summarize_image = _platform_instance.summarize_image
     summarize_s3_document = _platform_instance.summarize_s3_document
+    summarize_video = _platform_instance.summarize_video
 
     # Core functionalities
     structredExtraction = _platform_instance.structredExtraction

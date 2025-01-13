@@ -10,10 +10,12 @@ class MedicalScribe:
     def __init__(self, input_bucket_name, iam_arn,
                  boto_helper: BotoHelper,
                  s3_helper: S3Helper,
+                 region_name
                  ):
         self.iam_arn = iam_arn
         self.boto_helper = boto_helper
         self.s3_helper = s3_helper
+        self.region_name = region_name
         self.s3_client = self.boto_helper.create_client(service_name="s3")
         self.transcribe_client = self.boto_helper.create_client(service_name="transcribe")
         self.input_bucket_name = input_bucket_name
@@ -23,7 +25,7 @@ class MedicalScribe:
     def _generate_medical_scribing(self, job_name, object_key):
         s3_input_uri = f"s3://{self.input_bucket_name}/{object_key}"
 
-        self.s3_helper.create_bucket(self.output_bucket_name)
+        self.s3_helper.create_bucket(self.output_bucket_name, self.region_name)
 
         response = self.transcribe_client.start_medical_scribe_job(
             MedicalScribeJobName=job_name,
@@ -76,7 +78,7 @@ class MedicalScribe:
         return report_data, output_formated_transcript_json
 
     def fetch_medical_scribing_from_filepath(self, filepath):
-        object_key = self.s3_helper.save_to_s3(filepath)
+        object_key = self.s3_helper.save_to_s3(filepath, self.input_bucket_name, self.folder_name, allowed_extensions=[".mp3", ".wav"])
         filename = filepath.split('/')[-1]
         job_name = f"{self.folder_name}-{filename[:-4]}"
         logger.info("Medical-scribe job started")
@@ -86,7 +88,7 @@ class MedicalScribe:
         return summary_report_data, output_formated_transcript_json
 
     def fetch_medical_scribing_from_s3_path(self, s3_path):
-        object_key, filename = self.s3_helper.fetch_and_save_to_s3(s3_path)
+        object_key, filename = self.s3_helper.fetch_and_save_to_s3(s3_path, self.input_bucket_name, self.folder_name, allowed_extensions=[".mp3", ".wav"])
         job_name = f"{self.folder_name}-{filename[:-4]}"
         logger.info("Medical-scribe job started")
 
