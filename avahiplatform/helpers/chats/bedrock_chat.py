@@ -11,15 +11,12 @@ class BedrockChat(BaseChat):
 
     Attributes:
         model_id (str): The ID of the LLM model to be used for responses.
+        boto_helper (object): Helper object for AWS interactions.
         max_tokens (int): The maximum number of tokens to generate.
         temperature (float): The temperature parameter for controlling randomness in generation.
         p (float): The p parameter for nucleus (top-p) sampling.
-        aws_access_key_id (str): AWS access key ID.
-        aws_secret_access_key (str): AWS secret access key.
-        aws_session_token (str): AWS session token.
-        region_name (str): AWS region name.
-        input_tokens_price (float): Price per 1,000 input tokens
-        output_tokens_price (float): Price per 1,000 output tokens
+        input_tokens_price (float): Price per 1,000 input tokens.
+        output_tokens_price (float): Price per 1,000 output tokens.
     """
     def __init__(self, 
                  model_id,
