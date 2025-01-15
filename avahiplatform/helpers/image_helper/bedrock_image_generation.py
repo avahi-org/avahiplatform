@@ -53,7 +53,6 @@ respective parameters:
              - strength (float): Strength of the init image (default 0.75).
 """
 
-import boto3
 import json
 import base64
 import io
