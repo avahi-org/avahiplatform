@@ -5,7 +5,7 @@ with open("./README.md", "r") as f:
 
 setup(
     name="avahiplatform",
-    version="0.0.17",
+    version="0.0.18",
     description="An avahiai library which makes your Gen-AI tasks effortless",
     packages=find_packages(),
     long_description=long_description,
@@ -20,9 +20,10 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=["boto3>=1.34.160", "loguru>=0.7.2", "python-docx>=1.1.2", "PyMuPDF>=1.24.9",
-                      "psycopg2>=2.9.9", "PyMySQL>=1.1.1", "tabulate>=0.9.0", "chromadb==0.5.3",
-                      "pillow>=10.4.0", "sqlalchemy>=2.0.35", "pandas>=2.2.3", "gradio>=4.44.0",
-                      "typing_extensions>=4.0.0", "prometheus-client>=0.21.0"],
+                      "psycopg2>=2.9.9", "PyMySQL>=1.1.1", "tabulate>=0.9.0","pillow>=10.4.0",
+                      "sqlalchemy>=2.0.35", "pandas>=2.2.3", "gradio>=4.44.0",
+                      "typing_extensions>=4.0.0", "prometheus-client>=0.21.0",
+                      "python-magic>=0.4.27", "anthropic>=0.42.0"],
     extras_require={
         "dev": ["twine>=4.0.2"]
     },

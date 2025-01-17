@@ -101,39 +101,74 @@ class Observability:
         def wrapper(*args, **kwargs):
             start_time = time.perf_counter()
             function_name = f"{func.__module__}.{func.__qualname__}"
-            model_name = kwargs.get('model_name', 'default_model')
+            # Initialize model_name as 'unknown_model' by default
+            model_name = 'unknown_model'
+            # model_name = kwargs.get('model_name', 'default_model')
 
             # Increment Prometheus metrics
-            self.request_counter.labels(function_name, model_name).inc()
 
             result = func(*args, **kwargs)
+            # Extract model_id from the result if available
+            if isinstance(result, dict):
+                model_id = result.get('model_id', '')
+                model_name = model_id
 
             response_time_ms = (time.perf_counter() - start_time) * 1000
+
+            self.request_counter.labels(function_name, model_name).inc()
+
+            # Update Prometheus metrics
             self.response_time.labels(function_name, model_name).observe(response_time_ms)
 
-            # Extract costs if present
-            input_cost, output_cost, total_cost = 0.0, 0.0, 0.0
-            if isinstance(result, tuple) and len(result) >= 4:
-                input_cost, output_cost, total_cost = result[1], result[2], result[3]
+            # Extract metrics from result if available
+            response_text = None
+            input_tokens = 0
+            output_tokens = 0
+            time_to_first_token = None
+            time_to_last_token = None
+            time_per_output_token = None
+            input_cost = 0.0
+            output_cost = 0.0
+            total_cost = 0.0
 
+            if isinstance(result, dict):
+                response_text = result.get('response_text')
+                input_tokens = result.get('inputTokens', 0)
+                output_tokens = result.get('outputTokens', 0)
+                time_to_first_token = result.get('time_to_first_token')
+                time_to_last_token = result.get('time_to_last_token')
+                time_per_output_token = result.get('time_per_output_token')
+                input_cost = result.get('input_token_cost', 0.0)
+                output_cost = result.get('output_token_cost', 0.0)
+                total_cost = result.get('total_cost', 0.0)
+
+            # Update Prometheus cost metrics
             self.input_cost_tracker.labels(function_name, model_name).inc(input_cost)
             self.output_cost_tracker.labels(function_name, model_name).inc(output_cost)
             self.total_cost.inc(total_cost)
 
-            # Update metrics.jsonl
+            # Update metrics file
             self._update_metrics_file(
                 function_name,
                 model_name,
                 response_time_ms,
                 input_cost,
                 output_cost,
-                total_cost
+                total_cost,
+                response_text,
+                input_tokens,
+                output_tokens,
+                time_to_first_token,
+                time_to_last_token,
+                time_per_output_token
             )
 
             return result
         return wrapper
 
-    def _update_metrics_file(self, function_name, model_name, response_time_ms, input_cost, output_cost, total_cost):
+    def _update_metrics_file(self, function_name, model_name, response_time_ms, input_cost, output_cost, total_cost, 
+                           response_text=None, input_tokens=0, output_tokens=0, time_to_first_token=None, 
+                           time_to_last_token=None, time_per_output_token=None):
         with self._metrics_lock:
             if "functions" not in self.metrics_data:
                 self.metrics_data["functions"] = {}
@@ -142,10 +177,17 @@ class Observability:
                 self.metrics_data["functions"][function_name] = {
                     "model_name": model_name,
                     "total_requests": 0,
-                    "total_response_time_ms": 0.0,
-                    "avg_response_time_ms": 0.0,
-                    "input_cost_dollars": 0.0,
-                    "output_cost_dollars": 0.0,
+                    "response_text": None,
+                    "inputTokens": 0,
+                    "outputTokens": 0,
+                    "time_to_first_token": None,
+                    "time_to_last_token": None,
+                    "time_per_output_token": None,
+                    "input_token_cost": 0.0,
+                    "output_token_cost": 0.0,
+                    "total_cost": 0.0,
+                    "model_id": model_name,
+                    "provider": None,
                     "cumulative_total_cost_dollars": 0.0
                 }
 
@@ -153,10 +195,15 @@ class Observability:
 
             # Update metrics
             func_metrics["total_requests"] += 1
-            func_metrics["total_response_time_ms"] += response_time_ms
-            func_metrics["avg_response_time_ms"] = func_metrics["total_response_time_ms"] / func_metrics["total_requests"]
-            func_metrics["input_cost_dollars"] += input_cost
-            func_metrics["output_cost_dollars"] += output_cost
+            func_metrics["response_text"] = response_text
+            func_metrics["inputTokens"] = input_tokens
+            func_metrics["outputTokens"] = output_tokens
+            func_metrics["time_to_first_token"] = time_to_first_token
+            func_metrics["time_to_last_token"] = time_to_last_token
+            func_metrics["time_per_output_token"] = time_per_output_token
+            func_metrics["input_token_cost"] = input_cost
+            func_metrics["output_token_cost"] = output_cost
+            func_metrics["total_cost"] = total_cost
             func_metrics["cumulative_total_cost_dollars"] += total_cost
 
             # Write back to the JSON file
