@@ -1,19 +1,25 @@
-from avahiplatform.src.create_ui_wrapper_from_gradio import FunctionWrapper
-from avahiplatform.helpers.chats.bedrock_chat import BedrockChat
-from avahiplatform.helpers.connectors.boto_helper import BotoHelper
-from avahiplatform.helpers.connectors.s3_helper import S3Helper
-from avahiplatform.helpers.connectors.utils import Utils
-from avahiplatform.src.Observability import track_observability, observability
-from avahiplatform.src.summarizer import BedrockSummarizer
-from avahiplatform.src.structredExtraction import BedrockStructuredExtraction
-from avahiplatform.src.productDescriptionGeneration import ProductDescriptionGeneration
-from avahiplatform.src.grammarCorrection import GrammarCorrection
-from avahiplatform.src.data_masking import DataMasking
-from avahiplatform.src.chatbot import BedrockChatbot
-from avahiplatform.src.query_csv import QueryCSV
-from avahiplatform.src.icd_code_generator import ICDCodeGenerator
-from avahiplatform.src.medical_scribing import MedicalScribe
-from avahiplatform.src.nl2sql import BedrockNL2SQL
+from avahiplatform.helpers import (
+    BedrockChat,
+    BotoHelper,
+    S3Helper,
+    Utils
+)
+from avahiplatform.src import (
+    FunctionWrapper,
+    track_observability,
+    Observability,
+    BedrockSummarizer,
+    BedrockStructuredExtraction,
+    ProductDescriptionGeneration, 
+    GrammarCorrection,
+    DataMasking,
+    BedrockChatbot,
+    QueryCSV,
+    ICDCodeGenerator,
+    MedicalScribe,
+    BedrockNL2SQL,
+    ImageGeneration 
+)
 
 import os
 from loguru import logger
@@ -107,6 +113,11 @@ class AvahiPlatform:
             bedrockchat=self.bedrockchat
         )
 
+        self.imageGeneration = ImageGeneration(
+            boto_helper=self.boto_helper,
+            default_model_id=self.default_model_name
+        )
+
         # Initialize observability
 
         # Wrapper functions with observability tracking
@@ -146,7 +157,7 @@ class AvahiPlatform:
         self.nl2sql = FunctionWrapper(self.nlquery2sql)
 
 
-        # self.imageGeneration = FunctionWrapper(self.imageGeneration)
+        self.image_generation = FunctionWrapper(self._imageGeneration)
         # self.pdfsummarizer = FunctionWrapper(pdfsummarizer)
         # self.perform_semantic_search = FunctionWrapper(perform_semantic_search)
         # self.perform_rag_with_sources = FunctionWrapper(perform_rag_with_sources)
@@ -283,6 +294,15 @@ class AvahiPlatform:
             logger.error(user_friendly_error)
             return "None"
 
+    @track_observability
+    def _imageGeneration(self, image_prompt):
+        try:
+            return self.imageGeneration.generate_image(image_prompt)
+        except Exception as e:
+            user_friendly_error = Utils.get_user_friendly_error(e)
+            logger.error(user_friendly_error)
+            return "None"
+
     def initialize_observability(self, metrics_file='metrics.jsonl', start_prometheus=False, prometheus_port=8000):
         """
         Initialize the observability system.
@@ -291,6 +311,6 @@ class AvahiPlatform:
         :param start_prometheus: Whether to start the Prometheus server
         :param prometheus_port: Port on which to start the Prometheus server
         """
-        observability.initialize(metrics_file=metrics_file,
+        Observability.initialize(metrics_file=metrics_file,
                                 start_prometheus=start_prometheus,
                                 prometheus_port=prometheus_port)
