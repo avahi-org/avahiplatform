@@ -45,7 +45,6 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 - **Medical Scribing** 👩‍⚕️
 - **CSV Querying** 📊
 - **Natural Language to SQL Conversion** 🗣️➡️💾
-- **Semantic Search** 🔎💡
 - **Chatbot** 🤖
 - **Global Gradio URL for Any Functionality/Features** 🌐
 - **Support for Custom Prompts and Different Anthropic Claude Model Versions** 🧠
