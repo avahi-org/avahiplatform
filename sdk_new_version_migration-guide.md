@@ -47,6 +47,7 @@ avahiplatform.configure(
 | Grammar Correction | `avahiplatform.grammarAssistant("text")` | `avahiplatform.grammar_assistant(input_content="text")` | Standardized naming |
 | ICD Code Generation | `avahiplatform.icdcoding("text")` | `avahiplatform.generate_icdcode(input_content="text")` | More descriptive name |
 | Product Description | `avahiplatform.productDescriptionAssistant("sku", "event", "segment")` | `avahiplatform.product_description_assistant("sku", "event", "segment")` | Snake case naming |
+| Image Generation | `avahiplatform.imageGeneration(prompt="text")` | `avahiplatform.generate_image(image_prompt="text")` | Renamed |
 
 ## Return Value Changes
 
@@ -97,6 +98,21 @@ print("Masked:", masked_data)
 # New Version
 result = avahiplatform.mask_data(input_content="sensitive text")
 print("Masked:", result['response_text'])
+```
+
+### Image Summarization Example
+
+```python
+# Previous Version
+image, seed, cost = avahiplatform.imageGeneration("A beautiful sunset over mountains")
+print("Generated Image:", image)
+
+
+# New Version
+avahiplatform.configure(default_model_name='stability.stable-diffusion-xl-v1')
+result = avahiplatform.generate_image(image_prompt="A beautiful sunset over mountains")
+output[0].save('./Test/output.png')
+print(f"output: {output[1]}")
 ```
 
 ## Key Improvements in New SDK

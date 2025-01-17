@@ -35,7 +35,7 @@ def configure(
 def _init_platform_exports():
     """Initialize all platform exports with the configured instance."""
     global summarize_text, summarize_document, summarize_image, summarize_s3_document, summarize_video
-    global structuredExtraction, mask_data, grammar_assistant, product_description_assistant
+    global structuredExtraction, mask_data, grammar_assistant, product_description_assistant, generate_image
     global nl2sql, query_csv, medicalscribing, generate_icdcode, chatbot, initialize_observability
     global _platform_instance  
 
@@ -57,6 +57,7 @@ def _init_platform_exports():
 
     # AI Services
     nl2sql = _platform_instance.nl2sql
+    generate_image = _platform_instance.image_generation
     # imageGeneration = _platform_instance.imageGeneration
     # perform_semantic_search = _platform_instance.perform_semantic_search
     # perform_rag_with_sources = _platform_instance.perform_rag_with_sources

@@ -11,7 +11,7 @@
 You can install AvahiPlatform by running:
 
 ```bash
-pip install avahiplatform
+pip install avahiplatform -U
 ```
 
 ## Welcome to AvahiPlatform! 🚀
@@ -45,7 +45,6 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 - **Medical Scribing** 👩‍⚕️
 - **CSV Querying** 📊
 - **Natural Language to SQL Conversion** 🗣️➡️💾
-- **Retrieval-Augmented Generation (RaG) with Sources** 🔍📚
 - **Semantic Search** 🔎💡
 - **Chatbot** 🤖
 - **Global Gradio URL for Any Functionality/Features** 🌐
@@ -113,6 +112,12 @@ print("Corrected Text:", corrected_text['response_text'])
 # Product Description Generation Example
 description = avahiplatform.product_description_assistant("SKU123", "Summer Sale", "Young Adults")
 print("Product Description:", description['response_text'])
+
+# Image Generation Example
+avahiplatform.configure(default_model_name='stability.stable-diffusion-xl-v1')
+result = avahiplatform.generate_image(image_prompt="A beautiful sunset over mountains")
+output[0].save('./Test/output.png')
+print(f"output: {output[1]}")
 
 # ICD-10 Code Generation Example
 icd_codes = avahiplatform.generate_icdcode(input_content="s3://avahi-python-package-data/Patient’s clinical history.txt")
@@ -291,6 +296,16 @@ print("Corrected Text:", corrected_text['response_text'])
 ```python
 description = avahiplatform.product_description_assistant("SKU123", "Summer Sale", "Young Adults") # product name, season, target audience
 print("Product Description:", description['response_text'])
+```
+
+### Image Generation
+
+```python
+# Remember to give us-west-2 in region name in configuration as many stability models are in us-west-2.
+avahiplatform.configure(default_model_name='stability.stable-diffusion-xl-v1')
+result = avahiplatform.generate_image(image_prompt="A beautiful sunset over mountains")
+result[0].save('./Test/output.png')
+print(f"output: {result[1]}")
 ```
 
 ### ICD-10 Code Generation
@@ -481,6 +496,11 @@ tabulate>=0.9.0
 python-magic-bin>=0.4.14
 pillow>=10.4.0
 pandas>=2.2.3
+gradio>=4.44.0
+typing_extensions>=4.0.0
+prometheus-client>=0.21.0
+python-magic>=0.4.27
+anthropic>=0.42.0
 ```
 
 You can install these dependencies using pip. We recommend using a virtual environment for your project.
@@ -488,6 +508,14 @@ You can install these dependencies using pip. We recommend using a virtual envir
 ```bash
 pip install -r requirements.txt
 ```
+
+## New version migration guide
+
+[AvahiPlatform SDK changes](./sdk_new_version_migration-guide.md)
+
+## New feature integration guide
+
+[AvahiPlatform SDK changes](./sdk_feature-structure-guide.md)
 
 ## Contributors 🎉
 
