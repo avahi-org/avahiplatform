@@ -505,19 +505,17 @@ anthropic>=0.42.0
 
 You can install these dependencies using pip. We recommend using a virtual environment for your project.
 
-## License 📄
+```bash
+pip install -r requirements.txt
+```
 
-This project is licensed under the MIT License. See the [Open-source MIT license](https://opensource.org/licenses/MIT) file for details.
+## New version migration guide
 
-## Contributing 🤝
+[AvahiPlatform SDK changes](./sdk_new_version_migration-guide.md)
 
-We welcome contributions from the community! Whether you've found a bug or have a feature in mind, we'd love to hear from you. Here's how you can contribute:
+## New feature integration guide
 
-1. Open an issue to discuss your ideas or report bugs
-2. Fork the repository and create a new branch for your feature
-3. Submit a pull request with your changes
-
-Let's make AvahiPlatform even better together!
+[AvahiPlatform SDK changes](./sdk_feature-structure-guide.md)
 
 ## Contributors 🎉
 
@@ -540,6 +538,16 @@ We would like to thank the following individuals for their valuable contribution
 ## License 📄
 
 This project is licensed under the MIT License. See the [Open-source MIT license](https://opensource.org/licenses/MIT) file for details.
+
+## Contributing 🤝
+
+We welcome contributions from the community! Whether you've found a bug or have a feature in mind, we'd love to hear from you. Here's how you can contribute:
+
+1. **Open an issue** to discuss your ideas or report bugs.
+2. **Fork the repository** and create a new branch for your feature.
+3. **Submit a pull request** with your changes.
+
+Let's make AvahiPlatform even better together!
 
 ## Contact Us 📬
 
