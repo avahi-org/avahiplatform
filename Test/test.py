@@ -1,7 +1,3 @@
-import sys
-import os
-# Add the parent directory of logicsdk to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import avahiplatform
 # You can configure you want
 # avahiplatform.configure(iam_arn_for_medical_scribing="IAM role arn", input_bucket_name_for_medical_scribing="bucket name")
