@@ -47,7 +47,8 @@ avahiplatform.configure(
 | Grammar Correction | `avahiplatform.grammarAssistant("text")` | `avahiplatform.grammar_assistant(input_content="text")` | Standardized naming |
 | ICD Code Generation | `avahiplatform.icdcoding("text")` | `avahiplatform.generate_icdcode(input_content="text")` | More descriptive name |
 | Product Description | `avahiplatform.productDescriptionAssistant("sku", "event", "segment")` | `avahiplatform.product_description_assistant("sku", "event", "segment")` | Snake case naming |
-| Image Generation | `avahiplatform.imageGeneration(prompt="text")` | `avahiplatform.generate_image(image_prompt="text")` | Renamed |
+| Image Generation | `avahiplatform.imageGeneration(prompt="text")` | `avahiplatform.generate_image(image_prompt="text")` | Renamed for consistency |
+| Image Similarity | `avahiplatform.imageSimilarity(image1, image2)` | `avahiplatform.get_similar_images(image1, image2)` | Renamed for consistency |
 
 ## Return Value Changes
 
@@ -113,6 +114,18 @@ avahiplatform.configure(default_model_name='stability.stable-diffusion-xl-v1')
 result = avahiplatform.generate_image(image_prompt="A beautiful sunset over mountains")
 output[0].save('./Test/output.png')
 print(f"output: {output[1]}")
+```
+
+### Image Similarity Example
+
+```python    
+# Previous Version
+similarity, _, _, _ = avahiplatform.imageSimilarity(image1, image2)
+print("Similarity:", similarity)
+
+# New Version   
+Similarity = avahiplatform.get_similar_images(image1, image2)
+print("Similarity:", Similarity)
 ```
 
 ## Key Improvements in New SDK

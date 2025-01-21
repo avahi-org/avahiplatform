@@ -240,28 +240,33 @@ class Utils:
 
     @staticmethod
     def cosine_similarity(vector, matrix_or_vector):
-        """
-        Calculate cosine similarity between a vector and a matrix or another vector.
-        
-        Args:
-            vector (numpy.ndarray): Input vector
-            matrix_or_vector (numpy.ndarray): Matrix of vectors or single vector to compare against
-            
-        Returns:
-            numpy.ndarray: Array of similarity scores
-        """
-        if len(matrix_or_vector.shape) == 1:
-            # If comparing with a single vector
+
+        if matrix_or_vector.ndim == 1:
+            # Compute cosine similarity between two vectors
             dot_product = np.dot(vector, matrix_or_vector)
-            vector_norm = np.linalg.norm(vector)
-            matrix_norm = np.linalg.norm(matrix_or_vector)
-            return dot_product / (vector_norm * matrix_norm)
+            magnitude_vector = np.linalg.norm(vector)
+            magnitude_matrix_or_vector = np.linalg.norm(matrix_or_vector)
+
+            # Prevent division by zero
+            if magnitude_vector == 0 or magnitude_matrix_or_vector == 0:
+                return 0.0
+
+            return float(dot_product / (magnitude_vector * magnitude_matrix_or_vector))
+
+        elif matrix_or_vector.ndim == 2:
+            # Compute cosine similarity between the vector and each row of the matrix
+            dot_products = np.dot(matrix_or_vector, vector)
+            magnitude_vector = np.linalg.norm(vector)
+            magnitudes_matrix = np.linalg.norm(matrix_or_vector, axis=1)
+
+            # Prevent division by zero in the magnitudes
+            with np.errstate(divide='ignore', invalid='ignore'):
+                cosine_similarities = np.divide(dot_products, magnitudes_matrix * magnitude_vector)
+                cosine_similarities[magnitudes_matrix == 0] = 0
+
+            return cosine_similarities
         else:
-            # If comparing with a matrix
-            dot_product = np.dot(matrix_or_vector, vector)
-            vector_norm = np.linalg.norm(vector)
-            matrix_norm = np.linalg.norm(matrix_or_vector, axis=1)
-            return dot_product / (vector_norm * matrix_norm)
+            raise ValueError("Input must be either a 1D vector or a 2D matrix.")
 
     @staticmethod
     def extract_clinical_report(data):
