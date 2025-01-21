@@ -11,3 +11,4 @@ from .medical_scribing import MedicalScribe
 from .nl2sql import BedrockNL2SQL
 from .Observability import Observability, track_observability
 from .structredExtraction import BedrockStructuredExtraction
+from .imageSimilarity import BedrockImageSimilarity

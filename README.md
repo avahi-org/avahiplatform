@@ -42,6 +42,8 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 - **Grammar Correction** ✍️
 - **Product Description Generation** 🛍️
 - **ICD-10 Code Generation** 🏥
+- **Image Generation** 🎨
+- **Image similarity** 📊
 - **Medical Scribing** 👩‍⚕️
 - **CSV Querying** 📊
 - **Natural Language to SQL Conversion** 🗣️➡️💾
@@ -49,6 +51,14 @@ AvahiPlatform is not just a library; it's your ticket to effortless AI-powered a
 - **Global Gradio URL for Any Functionality/Features** 🌐
 - **Support for Custom Prompts and Different Anthropic Claude Model Versions** 🧠
 - **Error Handling with User-Friendly Messages** 🛠️
+
+## New version migration guide
+
+[AvahiPlatform SDK changes](https://github.com/avahi-org/avahiplatform/blob/main/sdk_new_version_migration-guide.md)
+
+## New feature integration guide
+
+[AvahiPlatform SDK changes](https://github.com/avahi-org/avahiplatform/blob/main/sdk_feature-structure-guide.md)
 
 ### Basic Usage
 
@@ -133,113 +143,34 @@ csv_files = {
 }
 csv_query_answer = avahiplatform.query_csv("How many entries are there in df1?", csv_file_paths=csv_files)
 print(f"CSV Query Answer: {csv_query_answer}")
+
+
+# Image similarity Example
+image1 = "./Test/image_1.jpg"
+image2 = "./Test/image_2.jpg"
+similarity = avahiplatform.get_similar_images(image1, image2)
+print(f"Similarity: {similarity}")
 ```
 
 ## Features
 
-### Summarization
-
-- **Text Summarization**: Summarize plain text, local files, or files stored in S3.
-- **Image and Video Summarization**: Generate summaries for images and videos.
-
-### Structured Information Extraction
-
-Extract structured data from unstructured text sources.
-
-### Data Masking
-
-Protect sensitive information by masking data in your datasets.
-
-### Grammar Correction
-
-Automatically correct grammatical errors in your text.
-
-### Product Description Generation
-
-Generate compelling product descriptions based on SKU, campaign, and target audience.
-
-### ICD-10 Code Generation
-
-Generate ICD-10 codes from clinical documents.
-
-### Medical Scribing
-
-Transcribe and summarize medical conversations from audio files.
-
-### CSV Querying
-
-Perform natural language queries on your CSV files.
-
-### Retrieval-Augmented Generation (RaG) with Sources
-
-Enhance your generation tasks with retrieval from external sources.
-
-### Semantic Search
-
-Perform semantic searches to find relevant documents or information.
-
-### Chatbot
-
-Deploy interactive chatbots with customizable prompts and behaviors.
-
-### Global Gradio URL for Any Functionality/Features
-
-Generate shareable URLs for any of your deployed functionalities.
-
-### Support for Custom Prompts and Different Anthropic Claude Model Versions
-
-Customize prompts and choose from various Anthropic Claude model versions.
-
-### Error Handling with User-Friendly Messages
-
-Receive clear and actionable error messages for common issues.
-
-## Configuration
-
-### AWS Credentials Setup 🔐
-
-AvahiPlatform requires AWS credentials to access AWS Bedrock and S3 services. You have two options for providing your AWS credentials:
-
-#### Default AWS Credentials
-- Configure your AWS credentials in the `~/.aws/credentials` file.
-- Or use the AWS CLI to set up your credentials.
-
-#### Explicit AWS Credentials
-- Pass the AWS Access Key ID and Secret Access Key directly when calling functions.
-
-💡 **Tip**: For detailed instructions on setting up AWS credentials, please refer to the [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
-
-Ensuring your AWS credentials are correctly set up will allow you to seamlessly use all of AvahiPlatform's powerful features. If you encounter any issues with authentication, double-check your credential configuration or reach out to our support team for assistance.
-
-### Additional Configuration
-
-You can configure additional settings such as IAM roles and input bucket names for specific features like medical scribing:
-
-```python
-avahiplatform.configure(
-    iam_arn_for_medical_scribing="IAM role arn",
-    input_bucket_name_for_medical_scribing="bucket name",
-    default_model_name='amazon.nova-pro-v1:0'
-)# Full configuration example with all available parameters
-avahiplatform.configure(
-	# AWS Credentials
-	aws_access_key_id="YOUR_ACCESS_KEY",          # AWS access key ID
-	aws_secret_access_key="YOUR_SECRET_KEY",      # AWS secret access key
-	aws_session_token="YOUR_SESSION_TOKEN",       # Optional: AWS session token
-	region_name="YOUR_REGION",                    # AWS region (e.g., 'us-east-1')
-	
-	# Token Pricing (Optional)
-	input_tokens_price=0.0,                       # Price per 1,000 input tokens
-	output_tokens_price=0.0,                      # Price per 1,000 output tokens
-	
-	# Medical Scribing Configuration
-	input_bucket_name_for_medical_scribing="YOUR_BUCKET_NAME",  # S3 bucket for medical scribing input
-	iam_arn_for_medical_scribing="YOUR_IAM_ARN",               # IAM role ARN for medical scribing
-	
-	# Model Configuration
-	default_model_name='anthropic.claude-3-sonnet-20240229-v1:0'  # Default model to use
-)
-```
+| Category | Feature | Description |
+|----------|---------|-------------|
+| Text Processing | Text Summarization | Summarize plain text, local files, or files stored in S3 |
+| | Grammar Correction | Automatically correct grammatical errors in your text |
+| Multimedia | Image and Video Summarization | Generate summaries for images and videos |
+| | Image Generation | Create custom images using state-of-the-art AI models |
+| | Image Similarity | Find and compare similar images in your dataset |
+| Data Processing | Structured Information Extraction | Extract structured data from unstructured text sources |
+| | Data Masking | Protect sensitive information by masking data in your datasets |
+| | CSV Querying | Perform natural language queries on your CSV files |
+| Healthcare | ICD-10 Code Generation | Generate ICD-10 codes from clinical documents |
+| | Medical Scribing | Transcribe and summarize medical conversations from audio files |
+| E-commerce | Product Description Generation | Generate compelling product descriptions based on SKU, campaign, and target audience |
+| | Chatbot | Deploy interactive chatbots with customizable prompts and behaviors |
+| Platform Features | Global Gradio URL | Generate shareable URLs for any of your deployed functionalities |
+| | Custom Prompts and Models | Support for custom prompts and different Anthropic Claude model versions |
+| | Error Handling | Receive clear and actionable error messages for common issues |
 
 ## Usage Examples
 
@@ -305,6 +236,27 @@ avahiplatform.configure(default_model_name='stability.stable-diffusion-xl-v1')
 result = avahiplatform.generate_image(image_prompt="A beautiful sunset over mountains")
 result[0].save('./Test/output.png')
 print(f"output: {result[1]}")
+```
+
+### Image Similarity
+
+```python
+image1 = "./Test/image_1.jpg"
+image2 = "./Test/image_2.jpg"
+similarity = avahiplatform.get_similar_images(image1, image2)
+print(f"Similarity: {similarity}")
+
+# You can also compare multiple images contained in the folder
+image1 = "./Test/image_1.jpg"
+folder = "./Test/"      
+similarity = avahiplatform.get_similar_images(image1, folder)
+print(f"Similarity: {similarity}")
+
+# You can also compare multiple s3 images contained in the folder
+image1 = "s3://bucket-name/image_1.jpg"
+folder = "s3://bucket-name/"
+similarity = avahiplatform.get_similar_images(image1, folder)
+print(f"Similarity: {similarity}")
 ```
 
 ### ICD-10 Code Generation
@@ -507,14 +459,6 @@ You can install these dependencies using pip. We recommend using a virtual envir
 ```bash
 pip install -r requirements.txt
 ```
-
-## New version migration guide
-
-[AvahiPlatform SDK changes](./sdk_new_version_migration-guide.md)
-
-## New feature integration guide
-
-[AvahiPlatform SDK changes](./sdk_feature-structure-guide.md)
 
 ## Contributors 🎉
 

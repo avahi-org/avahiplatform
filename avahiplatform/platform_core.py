@@ -18,7 +18,8 @@ from avahiplatform.src import (
     ICDCodeGenerator,
     MedicalScribe,
     BedrockNL2SQL,
-    ImageGeneration 
+    ImageGeneration,
+    BedrockImageSimilarity
 )
 
 import os
@@ -118,6 +119,12 @@ class AvahiPlatform:
             default_model_id=self.default_model_name
         )
 
+        self.imageSimilarity = BedrockImageSimilarity(
+            boto_helper=self.boto_helper,
+            s3_helper=self.s3_helper,
+            default_model_id=self.default_model_name
+        )
+
         # Initialize observability
 
         # Wrapper functions with observability tracking
@@ -155,6 +162,7 @@ class AvahiPlatform:
         self.grammar_assistant = FunctionWrapper(self.grammar_correction)
         self.product_description_assistant = FunctionWrapper(self.product_description)
         self.nl2sql = FunctionWrapper(self.nlquery2sql)
+        self.get_similar_images = FunctionWrapper(self._imageSimilarity)
 
 
         self.image_generation = FunctionWrapper(self._imageGeneration)
@@ -302,6 +310,56 @@ class AvahiPlatform:
             user_friendly_error = Utils.get_user_friendly_error(e)
             logger.error(user_friendly_error)
             return "None"
+
+    @track_observability
+    def _imageSimilarity(self, image, other_file, k=10, embedding_length=256):
+        try:
+            if isinstance(other_file, str):
+                if os.path.isfile(other_file) or (other_file.startswith("s3://") and mimetypes.guess_type(other_file)[0] is not None):
+                    # Case where 'other' is a file (local or S3)
+                    return self.imageSimilarity.image_to_image_similarity(
+                        image=image,
+                        other_image=other_file,
+                        output_embedding_length=embedding_length,
+                    )
+                elif os.path.isdir(other_file):
+                    # Case where 'other' is a folder (local or S3)
+                    return self.imageSimilarity.image_to_folder_similarity(
+                        image=image,
+                        folder_path=other_file,
+                        k=k,
+                        output_embedding_length=embedding_length,
+                    )
+                elif (other_file.startswith("s3://") and (other_file.endswith("/") or mimetypes.guess_type(other_file)[0] is None)):
+                    return self.imageSimilarity.image_to_s3_folder_similarity(
+                        image=image,
+                        s3_folder_path=other_file,
+                        k=k,
+                        output_embedding_length=embedding_length
+                    )
+                else:
+                    raise ValueError("other is of an unrecognized type.")
+            elif isinstance(other_file, Image.Image):
+                # Case where 'other' is a single PIL Image
+                return self.imageSimilarity.image_to_image_similarity(
+                    image=image,
+                    other_image=other_file,
+                    output_embedding_length=embedding_length
+                )
+            elif isinstance(other_file, list) and all(isinstance(img, Image.Image) for img in other_file):
+                # Case where 'other' is a list of PIL Images
+                return self.imageSimilarity.image_to_pil_list_similarity(
+                    image=image,
+                    pil_image_list=other_file,
+                    k=k,
+                    output_embedding_length=embedding_length
+                )
+            else:
+                raise ValueError("other is of an unrecognized type.")
+        except Exception as e:
+            user_friendly_error = Utils.get_user_friendly_error(e)
+            logger.error(user_friendly_error)
+            return None
 
     def initialize_observability(self, metrics_file='metrics.jsonl', start_prometheus=False, prometheus_port=8000):
         """

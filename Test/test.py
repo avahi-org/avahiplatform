@@ -1,7 +1,11 @@
+import sys
+import os
+# Add the parent directory of logicsdk to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import avahiplatform
 # You can configure you want
 # avahiplatform.configure(iam_arn_for_medical_scribing="IAM role arn", input_bucket_name_for_medical_scribing="bucket name")
-avahiplatform.configure(default_model_name='stability.stable-image-core-v1:0', region_name="us-west-2")
+avahiplatform.configure(default_model_name='amazon.titan-embed-image-v1')
 
 
 # avahiplatform.initialize_observability(metrics_file='./metrics.jsonl', start_prometheus=True, prometheus_port=8007)
@@ -126,14 +130,21 @@ avahiplatform.configure(default_model_name='stability.stable-image-core-v1:0', r
 #     print(f"output: {output['response_text']}")
 # except Exception as e:
 #     print(f"Error occurred: {str(e)}")
-from PIL import Image
-try:
-    image_prompt = 'A cat wearing the Glass and standing in the snow'
+# from PIL import Image
+# try:
+#     image_prompt = 'A cat wearing the Glass and standing in the snow'
 
-    output = avahiplatform.generate_image(
-        image_prompt=image_prompt
-    )
-    output[0].save('./Test/output.png')
-    print(f"output: {output[1]}")
-except Exception as e:
-    print(f"Error occurred: {str(e)}")
+#     output = avahiplatform.generate_image(
+#         image_prompt=image_prompt
+#     )
+#     output[0].save('./Test/output.png')
+#     print(f"output: {output[1]}")
+# except Exception as e:
+#     print(f"Error occurred: {str(e)}")
+
+# try:
+#     # image = Image.open('./Test/041_400NB_Ramp_to_Glenridge_Conn_2024-09-13T17-30-20.340+00-00.jpg')
+#     output = avahiplatform.get_similar_images("./Test/041_400NB_Ramp_to_Glenridge_Conn_2024-09-13T17-30-20.340+00-00.jpg", other_file='./Test/output.png')
+#     print(f"output: {output}")
+# except Exception as e:
+#     print(f"Error occurred: {str(e)}")
