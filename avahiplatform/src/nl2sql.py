@@ -15,7 +15,7 @@ class BedrockNL2SQL:
         """
         self.bedrockchat = bedrockchat
 
-    def _create_prompt_list(self, nl_query: str, table_info: str, user_prompt: Optional[str] = None) -> list:
+    def _create_prompt_list(self, db_type:str, nl_query: str, table_info: str, user_prompt: Optional[str] = None) -> list:
         """
         Creates a list of prompts for generating SQL from natural language using BedrockChat.
         
@@ -28,25 +28,28 @@ class BedrockNL2SQL:
             list: List of prompts formatted for BedrockChat
         """
         system_prompt = user_prompt if user_prompt else f"""
-        You are a senior data analyst with expertise in SQL.
-        Your task is to generate a valid SQL query based on the user's question and the provided database schema.
-        
+        You are a helpful assistant. Your task is to answer User Queries precisely by generating an appropriate {db_type} query, executing it on the database, and then formatting the results.
+        ***NEVER START ANSWER WITH 'Based on the query results or like that way, it should look like human answer not robotic answer'.
+
         Database schema:
         {table_info}
-        
+
         Instructions:
-        1. Carefully analyze the user's question.
-        2. Generate a valid SQL query that can be executed on the provided database schema.
-        3. Return the query without explanation.
-        
-        If you're ready, return the query in the format:
+        1. Analyze the user's question and the database schema.
+        2. Generate a SQL query to answer the question.
+        3. Execute the query and return the results.
+        4. Provide a human-friendly interpretation of the results.
+
+        If you need to execute a SQL query, use the following format:
         [SQL]
         Your SQL query here
         [/SQL]
+
+        I will execute the query and provide you with the results.
         """
         return [{"text": f"System prompt: {system_prompt} \n User: {nl_query}"}]
 
-    def handle_query(self, db_uri: str, nl_query: str, user_prompt: Optional[str] = None, stream: bool = False) -> Dict[str, Any]:
+    def handle_query(self, db_type: str, db_uri: str, nl_query: str, user_prompt: Optional[str] = None, stream: bool = False) -> Dict[str, Any]:
         """
         Handles a user query by generating SQL, executing it, and providing a human-readable interpretation.
         
@@ -65,9 +68,8 @@ class BedrockNL2SQL:
             metadata = sqlalchemy.MetaData()
             metadata.reflect(bind=engine)
             table_info = self._get_table_info(metadata)
-            
             # Phase 1: Generate SQL query
-            prompts = self._create_prompt_list(nl_query, table_info, user_prompt)
+            prompts = self._create_prompt_list(db_type, nl_query, table_info, user_prompt)
             response = self.bedrockchat.invoke(prompts) if not stream else self.bedrockchat.invoke_stream_parsed(prompts)
             
             assistant_message = response["response_text"]
@@ -127,5 +129,5 @@ class BedrockNL2SQL:
             logger.error(f"{db_type} cannot be connected")
             raise ValueError(f"{db_type} cannot be connected")
 
-        return self.model_invoke(nl_query, db_type, db_uri, user_prompt)
+        return self.handle_query(nl_query=nl_query, db_type=db_type, db_uri=db_uri, user_prompt=user_prompt, stream=stream)
 

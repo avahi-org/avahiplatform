@@ -34,6 +34,9 @@ class AvahiPlatform:
                  region_name=None,
                  input_tokens_price=None,
                  output_tokens_price=None,
+                 max_tokens=512, 
+                 temperature=0.6, 
+                 p=0.5,
                  input_bucket_name_for_medical_scribing="",
                  iam_arn_for_medical_scribing="",
                  default_model_name='anthropic.claude-3-sonnet-20240229-v1:0'):
@@ -42,6 +45,9 @@ class AvahiPlatform:
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_session_token = aws_session_token
         self.region_name = region_name
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.p = p
 
         self.input_tokens_price = input_tokens_price
         self.output_tokens_price = output_tokens_price
@@ -67,7 +73,10 @@ class AvahiPlatform:
             model_id=self.default_model_name,
             boto_helper=self.boto_helper,
             input_tokens_price=self.input_tokens_price,
-            output_tokens_price=self.output_tokens_price
+            output_tokens_price=self.output_tokens_price,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature,
+            p=self.p
         )
 
         self.summarizer = BedrockSummarizer(

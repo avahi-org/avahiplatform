@@ -10,6 +10,9 @@ def configure(
     region_name=None,
     input_tokens_price=None,
     output_tokens_price=None,
+    max_tokens=512,
+    temperature=0.6,
+    p=0.5,
     input_bucket_name_for_medical_scribing="",
     iam_arn_for_medical_scribing="",
     default_model_name='anthropic.claude-3-sonnet-20240229-v1:0'
@@ -26,6 +29,9 @@ def configure(
         region_name=region_name,
         input_tokens_price=input_tokens_price,
         output_tokens_price=output_tokens_price,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        p=p,
         input_bucket_name_for_medical_scribing=input_bucket_name_for_medical_scribing,
         iam_arn_for_medical_scribing=iam_arn_for_medical_scribing,
         default_model_name=default_model_name
