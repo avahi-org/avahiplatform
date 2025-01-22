@@ -5,7 +5,7 @@ with open("./README.md", "r") as f:
 
 setup(
     name="avahiplatform",
-    version="0.0.19",
+    version="0.0.20",
     description="An avahiai library which makes your Gen-AI tasks effortless",
     packages=find_packages(),
     long_description=long_description,

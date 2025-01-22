@@ -60,6 +60,8 @@ class AvahiPlatform:
             s3_client=self.boto_helper.create_client(service_name="s3")
         )
 
+        self.observability = Observability()
+
         # Initialize BedrockChat
         self.bedrockchat = BedrockChat(
             model_id=self.default_model_name,
@@ -171,7 +173,7 @@ class AvahiPlatform:
         # self.perform_rag_with_sources = FunctionWrapper(perform_rag_with_sources)
         # self.imageSimilarity = imageSimilarity
 
-        # self.initialize_observability = self._initialize_observability
+        self.initialize_observability = self._initialize_observability
 
     @track_observability
     def icdcoding(self, input_content):
@@ -361,7 +363,7 @@ class AvahiPlatform:
             logger.error(user_friendly_error)
             return None
 
-    def initialize_observability(self, metrics_file='metrics.jsonl', start_prometheus=False, prometheus_port=8000):
+    def _initialize_observability(self, metrics_file='metrics.jsonl', start_prometheus=False, prometheus_port=8000):
         """
         Initialize the observability system.
 
@@ -369,6 +371,6 @@ class AvahiPlatform:
         :param start_prometheus: Whether to start the Prometheus server
         :param prometheus_port: Port on which to start the Prometheus server
         """
-        Observability.initialize(metrics_file=metrics_file,
+        self.observability.initialize(metrics_file=metrics_file,
                                 start_prometheus=start_prometheus,
                                 prometheus_port=prometheus_port)
